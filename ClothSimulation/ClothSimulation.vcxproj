@@ -119,6 +119,7 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpringDamper.h" />
     <ClInclude Include="Triangle.h" />
