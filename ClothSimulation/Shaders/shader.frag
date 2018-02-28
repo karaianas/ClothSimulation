@@ -1,19 +1,21 @@
 #version 330 core
 
-in vec3 sampleExtraOutput;
+//in vec3 sampleExtraOutput;
 //in vec3 P;
-in vec3 N;
-in vec2 lights;
+//in vec3 N;
+//in vec2 lights;
 
 out vec4 color;
 
-void directional();
+//void directional();
 
 void main()
 {
-	directional();
+	//directional();
+	color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+/*
 void directional()
 {
 	vec3 norm = normalize(N);
@@ -46,3 +48,4 @@ void directional()
 	vec3 result = (total + ambi1) * sampleExtraOutput;
 	color = vec4(result, 1.0f);
 }
+*/

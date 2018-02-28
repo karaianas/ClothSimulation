@@ -1,16 +1,29 @@
 #pragma once
 #include "Core.h"
-#include "Particle.h"
+//#include "Particle.h"
+#include "SpringDamper.h"
 
 using namespace std;
 
 class ParticleSystem {
+public:
 	int numParticles;
-	vector<Particle>* P;
+	vector<Particle>* particles;
+	vector<SpringDamper>* springs;
 	//Particle * P;
 
+	GLuint VAO, VBO;
+	GLuint uMVP, uModel;
+	vector<glm::vec3> positions;
+
 public:
-	void setParticles(vector<Particle>* p) { P = p; numParticles = p->size(); };
+
+	// gridSize should be the number of particles per side
+	ParticleSystem(int gridSize, glm::vec3 offset);
 	void update(float dt);
-	void draw();
+	void draw(GLuint program, glm::mat4 P, glm::mat4 V);
+	void drawInit();
+
+	// Check
+	void printSprings();
 };

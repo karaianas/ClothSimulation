@@ -2,6 +2,10 @@
 
 using namespace std;
 
+Particle::Particle()
+{
+}
+
 void Particle::setParams(float m, glm::vec3 p, glm::vec3 v, glm::vec3 f)
 {
 	mass = m;

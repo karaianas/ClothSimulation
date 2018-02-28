@@ -20,6 +20,8 @@ glm::mat4 Window::P;
 glm::mat4 Window::V;
 
 bool wireframe = false;
+bool isTest = false;
+float totalTime = 0.0f;
 glm::vec2 prev_pos; 
 bool rotate_flag_L = false;
 bool rotate_flag_R = false;
@@ -101,7 +103,14 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-	
+	if (isTest)
+	{
+		float dt = 0.01f;
+		totalTime += dt;
+		glm::vec3 position = ps.particles->at(0).getPos();
+		cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
+		ps.update(dt);
+	}
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -112,6 +121,9 @@ void Window::display_callback(GLFWwindow* window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	//cout << V[3][0] << " " << V[3][1] << " " << V[3][2] << endl;
+	ps.draw(shaderProgram, P, V);
 
 	glfwPollEvents();
 	glfwSwapBuffers(window);
@@ -130,7 +142,10 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		// test
 		if (key == GLFW_KEY_T)
 		{
-			test01();
+			if (isTest)
+				isTest = false;
+			else
+				isTest = true;
 		}
 
 	}
