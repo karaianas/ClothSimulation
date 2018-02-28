@@ -15,10 +15,16 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 		for (int j = 0; j < gridSize; j++)
 		{
 			Particle x = Particle();
-			x.setParams(0.01f, glm::vec3(float(i) * 0.01f, float(j) * 0.01f, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
-			x.id = count;
+			x.setParams(0.01f, glm::vec3(float(j) * 0.01f, float(i) * 0.01f, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+			x.id = count;			
+			// Fix the top row for now
+			if (i == gridSize - 1)
+			{
+				x.isFixed = true;
+			}
 			count++;
 			particles->push_back(x);
+			
 		}
 	}
 

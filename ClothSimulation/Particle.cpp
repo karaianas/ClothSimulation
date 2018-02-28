@@ -4,6 +4,7 @@ using namespace std;
 
 Particle::Particle()
 {
+	isFixed = false;
 }
 
 void Particle::setParams(float m, glm::vec3 p, glm::vec3 v, glm::vec3 f)
@@ -16,12 +17,15 @@ void Particle::setParams(float m, glm::vec3 p, glm::vec3 v, glm::vec3 f)
 
 void Particle::update(float dt)
 {
-	// (1) Computer a
-	glm::vec3 accel = (1.0f / mass) * force;
+	if (!isFixed)
+	{
+		// (1) Compute a
+		glm::vec3 accel = (1.0f / mass) * force;
 
-	// (2) New velocity and new positon
-	velocity += accel * dt;
-	position += velocity * dt;
+		// (2) New velocity and new positon
+		velocity += accel * dt;
+		position += velocity * dt;
+	}
 
 	// (3) zero out the force
 	force = glm::vec3(0.0f);

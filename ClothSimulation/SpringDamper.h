@@ -6,7 +6,7 @@ class SpringDamper {
 public: 
 	SpringDamper(Particle * p1, Particle * p2);
 	void computeForce();
-	void computeDistance();
+	float getDistance();
 
 	// Check
 	void printIDs();

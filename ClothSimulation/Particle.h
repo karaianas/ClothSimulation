@@ -21,4 +21,5 @@ private:
 
 public:
 	int id;
+	bool isFixed;
 };
