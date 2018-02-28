@@ -6,10 +6,9 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 {
 	numParticles = gridSize * gridSize;
 
-	// Allocate space
+	// Create particles
 	particles = new vector<Particle>();
 
-	// Create particles
 	int count = 0;
 	for (int i = 0; i < gridSize; i++)
 	{
@@ -88,6 +87,7 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		positions.push_back(spring.P1->getPos()); 
 		positions.push_back(spring.P2->getPos());
 	}
+
 	drawInit();
 
 	glm::mat4 worldM = glm::mat4(1.0f);

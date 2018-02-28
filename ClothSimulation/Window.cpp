@@ -107,8 +107,8 @@ void Window::idle_callback()
 	{
 		float dt = 0.01f;
 		totalTime += dt;
-		glm::vec3 position = ps.particles->at(0).getPos();
-		cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
+		//glm::vec3 position = ps.particles->at(0).getPos();
+		//cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
 		ps.update(dt);
 	}
 }
