@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "testZone.h"
 
 const char* window_title = "Cloth Simulator";
 GLint shaderProgram;
@@ -124,6 +125,12 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			glfwSetWindowShouldClose(window, GL_TRUE);
 			//std::cout << "ffff" << std::endl;
+		}
+
+		// test
+		if (key == GLFW_KEY_T)
+		{
+			test01();
 		}
 
 	}
