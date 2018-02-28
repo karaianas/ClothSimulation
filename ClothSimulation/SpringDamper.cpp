@@ -17,12 +17,20 @@ void SpringDamper::setParams(float ks, float kd)
 
 void SpringDamper::computeForce()
 {
-	// Spring only
 	glm::vec3 e_ = P2->getPos() - P1->getPos();
 	float l = glm::length(e_);
 	glm::vec3 e = glm::normalize(e_);
+
+	// Spring
 	float f_s = -k_s * (l_0 - l);
-	glm::vec3 f_1 = f_s * e;
+
+	// Damper
+	float v1 = glm::dot(e, P1->getVel());
+	float v2 = glm::dot(e, P2->getVel());
+	float dv = v1 - v2;
+	float f_d = -k_d * dv;
+
+	glm::vec3 f_1 = (f_s + f_d) * e;
 	glm::vec3 f_2 = -f_1;
 
 	P1->applyForce(f_1);

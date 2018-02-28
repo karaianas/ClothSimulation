@@ -12,6 +12,7 @@ public:
 
 	float getMass() { return mass; };
 	glm::vec3 getPos() { return position; };
+	glm::vec3 getVel() { return velocity; };
 
 private:
 	float mass;

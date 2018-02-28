@@ -88,16 +88,16 @@ void ParticleSystem::update(float dt)
 
 	// (2) Compute elastic force
 	int count = 0;
-	cout << "--------------" << endl;
+	//cout << "--------------" << endl;
 	for (auto spring : *springs)
 	{
 		spring.computeForce();
-		if (count < 3)
-		{
-			float dist = spring.getDistance();
-			cout << dist << endl;
-		}
-		count++;
+		//if (count < 3)
+		//{
+		//	float dist = spring.getDistance();
+		//	cout << dist << endl;
+		//}
+		//count++;
 		
 	}
 
