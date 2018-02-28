@@ -3,7 +3,7 @@
 #include "Core.h"
 #include "ParticleSystem.h"
 
-ParticleSystem ps(4, glm::vec3(0.0f));
+ParticleSystem ps(10, glm::vec3(0.0f));
 
 using namespace std;
 

@@ -29,6 +29,11 @@ bool rotate_flag_R = false;
 void Window::initialize_objects()
 {
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	//for (int i = 0; i < 10; i++)
+	//{
+	//	cout << ps.springs->at(i).restLength << endl;
+	//}
+	//ps.printSprings();
 }
 
 void Window::clean_up()
@@ -105,7 +110,7 @@ void Window::idle_callback()
 {
 	if (isTest)
 	{
-		float dt = 0.01f;
+		float dt = 0.001f;
 		totalTime += dt;
 		//glm::vec3 position = ps.particles->at(0).getPos();
 		//cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;

@@ -30,6 +30,10 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 
 	// Create spring-dampers
 	springs = new vector<SpringDamper>();
+	float k_s1 = 50.0f;
+	float k_d1 = 0.1f;
+	float k_s2 = 30.0f;
+	float k_d2 = 0.1f;
 
 	for (int i = 0; i < gridSize; i++)
 	{
@@ -44,11 +48,13 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 			if (i != gridSize - 1)
 			{
 				SpringDamper s(&(particles->at(curr)), &(particles->at(down)));
+				s.setParams(k_s1, k_d1);
 				springs->push_back(s);
 
 				if (j != gridSize - 1)
 				{
 					SpringDamper s(&(particles->at(curr)), &(particles->at(diag)));
+					s.setParams(k_s2, k_d2);
 					springs->push_back(s);
 				}
 			}
@@ -56,11 +62,13 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 			if (j != gridSize - 1)
 			{
 				SpringDamper s(&(particles->at(curr)), &(particles->at(right)));
+				s.setParams(k_s1, k_d1);
 				springs->push_back(s);
 
 				if (i != 0)
 				{
 					SpringDamper s(&(particles->at(curr)), &(particles->at(diag2)));
+					s.setParams(k_s2, k_d2);
 					springs->push_back(s);
 				}
 			}
@@ -70,7 +78,7 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 
 void ParticleSystem::update(float dt)
 {
-	// (1) Compute net force
+	// (1) Compute gravitational force
 	glm::vec3 g(0, -9.8, 0);
 	for (int i = 0; i < numParticles; i++)
 	{
@@ -78,7 +86,22 @@ void ParticleSystem::update(float dt)
 		particles->at(i).applyForce(f);
 	}
 
-	// (2) Integrate
+	// (2) Compute elastic force
+	int count = 0;
+	cout << "--------------" << endl;
+	for (auto spring : *springs)
+	{
+		spring.computeForce();
+		if (count < 3)
+		{
+			float dist = spring.getDistance();
+			cout << dist << endl;
+		}
+		count++;
+		
+	}
+
+	// (3) Integrate
 	for (int i = 0; i < numParticles; i++)
 		particles->at(i).update(dt);
 }
