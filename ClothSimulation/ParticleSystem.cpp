@@ -40,10 +40,10 @@ void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 			x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 			x.id = count;			
 			// Fix the top row for now
-			//if (i == gridSize - 1)
-			//{
-			//	x.isFixed = true;
-			//}
+			if (i == gridSize - 1)
+			{
+				x.isFixed = true;
+			}
 			count++;
 			particles->push_back(x);
 			
@@ -172,6 +172,13 @@ void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 
 		}
 	}
+}
+
+void ParticleSystem::drop()
+{
+	int num = sqrt(numParticles);
+	for (int i = num * (num - 1); i < numParticles; i++)
+		particles->at(i).isFixed = false;
 }
 
 void ParticleSystem::update(float dt)

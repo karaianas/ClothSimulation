@@ -13,6 +13,7 @@ public:
 	void setParams(float m, float len, vector<float> springC, float drag, float den, int step_);
 	void createMesh(int gridSize, glm::vec3 offset);
 
+	void drop();
 	void update(float dt);
 	void draw(GLuint program, glm::mat4 P, glm::mat4 V);
 	void drawInit();

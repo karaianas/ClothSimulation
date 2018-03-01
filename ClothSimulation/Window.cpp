@@ -20,6 +20,7 @@ glm::mat4 Window::V;
 
 bool wireframe = false;
 bool isTest = false;
+bool isDrop = false;
 float totalTime = 0.0f;
 glm::vec2 prev_pos; 
 bool rotate_flag_L = false;
@@ -46,9 +47,10 @@ void Window::initialize_objects()
 	float c_d = 1.0f;
 	float rho = 1.23f;
 	int step = 5;
+	int size = 50;
 	ps = new ParticleSystem();
 	ps->setParams(mass, length, springConstants, c_d, rho, step);
-	ps->createMesh(50, glm::vec3(0.0f, 1.0f, 0.0f));
+	ps->createMesh(size, glm::vec3(-float(size)/200.0f, 1.0f, 0.0f));
 
 	ground = new Plane(-0.001f);
 }
@@ -177,6 +179,12 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				wireframe = false;
 			else
 				wireframe = true;
+		}
+
+		if (key == GLFW_KEY_D)
+		{
+			isDrop = true;
+			ps->drop();
 		}
 
 	}
