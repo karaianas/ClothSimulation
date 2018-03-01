@@ -36,21 +36,21 @@ void Window::initialize_objects()
 	springConstants.push_back(0.001f);
 	springConstants.push_back(4.2f);
 	springConstants.push_back(0.001f);
-	springConstants.push_back(2.0f);
+	springConstants.push_back(1.0f);// 2.0f
 	springConstants.push_back(0.001f);
-	springConstants.push_back(2.0f);
+	springConstants.push_back(1.0f);// 2.0f
 	springConstants.push_back(0.001f);
 
 	float mass = 0.0001;
 	float length = 0.01f;
 	float c_d = 1.0f;
 	float rho = 1.23f;
-
+	int step = 5;
 	ps = new ParticleSystem();
-	ps->setParams(mass, length, springConstants, c_d, rho);
-	ps->createMesh(31, glm::vec3(0.0f, 0.0f, 0.0f));
+	ps->setParams(mass, length, springConstants, c_d, rho, step);
+	ps->createMesh(50, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	ground = new Plane(-1.0f);
+	ground = new Plane(-0.001f);
 }
 
 void Window::clean_up()

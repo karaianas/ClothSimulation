@@ -6,7 +6,7 @@ ParticleSystem::ParticleSystem()
 {
 }
 
-void ParticleSystem::setParams(float m, float len, vector<float> springC, float drag, float den)
+void ParticleSystem::setParams(float m, float len, vector<float> springC, float drag, float den, int step_)
 {
 	k_s1 = springC[0];
 	k_d1 = springC[1];
@@ -21,6 +21,7 @@ void ParticleSystem::setParams(float m, float len, vector<float> springC, float 
 	length = len;
 	c_d = drag;
 	rho = den;
+	step = step_;
 }
 
 void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
@@ -39,10 +40,10 @@ void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 			x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 			x.id = count;			
 			// Fix the top row for now
-			if (i == gridSize - 1)
-			{
-				x.isFixed = true;
-			}
+			//if (i == gridSize - 1)
+			//{
+			//	x.isFixed = true;
+			//}
 			count++;
 			particles->push_back(x);
 			
@@ -116,7 +117,6 @@ void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 
 	// Create secondary spring-dampers
 	springs2 = new vector<SpringDamper>();
-	float step = 3;
 
 	for (int i = 0; i < gridSize; i++)
 	{
@@ -193,7 +193,7 @@ void ParticleSystem::update(float dt)
 
 	// (3) Compute aerodynamic force
 	for (auto t : *triangles)
-		t.computeForce(glm::vec3(0.0f, 0.0f, 5.0f));
+		t.computeForce(glm::vec3(0.0f, 0.0f, 5.0f));//5
 
 	// (4) Integrate
 	for (int i = 0; i < numParticles; i++)
@@ -235,10 +235,12 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	uMVP = glGetUniformLocation(program, "MVP");
 	uModel = glGetUniformLocation(program, "model");
+	uColor = glGetUniformLocation(program, "color");
 
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uMVP, 1, GL_FALSE, &MVP[0][0]);
 	glUniformMatrix4fv(uModel, 1, GL_FALSE, &worldM[0][0]);
+	glUniform3f(uColor, 0.4f, 0.7f, 1.0f);
 
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);

@@ -3,20 +3,20 @@
 //in vec3 sampleExtraOutput;
 //in vec3 P;
 in vec3 N;
+in vec3 C;
 //in vec2 lights;
 
 out vec4 color;
 
-//void directional();
+void directional();
 
 void main()
 {
-	//directional();
+	directional();
 	//color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	color = vec4(N, 1.0f);
+	//color = vec4(N, 1.0f);
 }
 
-/*
 void directional()
 {
 	vec3 norm = normalize(N);
@@ -41,12 +41,15 @@ void directional()
 	// specular
 
 	vec3 total = vec3(0.0f, 0.0f, 0.0f);
+	total += diff1;
+	total += diff2;
+	/*
 	if(lights[0] - 0.5f > 0.0f)
 		total += diff1;
 	if(lights[1] - 0.5f > 0.0f)
 		total += diff2;
+		*/
 
-	vec3 result = (total + ambi1) * sampleExtraOutput;
+	vec3 result = (total + ambi1) * C;
 	color = vec4(result, 1.0f);
 }
-*/

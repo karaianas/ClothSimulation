@@ -14,6 +14,6 @@ private:
 	vector<glm::vec3> positions;
 	vector<glm::vec3> normals;
 	GLuint VAO, VBO, VBO2;
-	GLuint uMVP, uModel;
+	GLuint uMVP, uModel, uColor;
 	float height;
 };

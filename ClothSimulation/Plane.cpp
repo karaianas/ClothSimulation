@@ -54,10 +54,12 @@ void Plane::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	uMVP = glGetUniformLocation(program, "MVP");
 	uModel = glGetUniformLocation(program, "model");
+	uColor = glGetUniformLocation(program, "color");
 
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uMVP, 1, GL_FALSE, &MVP[0][0]);
 	glUniformMatrix4fv(uModel, 1, GL_FALSE, &worldM[0][0]);
+	glUniform3f(uColor, 0.8f, 0.9f, 0.8f);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, positions.size());

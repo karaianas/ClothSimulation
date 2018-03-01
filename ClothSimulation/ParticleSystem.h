@@ -10,7 +10,7 @@ class ParticleSystem {
 public:
 	ParticleSystem();
 
-	void setParams(float m, float len, vector<float> springC, float drag, float den);
+	void setParams(float m, float len, vector<float> springC, float drag, float den, int step_);
 	void createMesh(int gridSize, glm::vec3 offset);
 
 	void update(float dt);
@@ -30,7 +30,7 @@ public:
 
 private:
 	GLuint VAO, VBO, VBO2;
-	GLuint uMVP, uModel;
+	GLuint uMVP, uModel, uColor;
 	vector<glm::vec3> spositions;
 	vector<glm::vec3> tpositions;
 	vector<glm::vec3> tnormals;
@@ -39,4 +39,5 @@ private:
 	float k_s1, k_d1, k_s2, k_d2, k_s3, k_d3, k_s4, k_d4;
 	float mass, length;
 	float c_d, rho;
+	int step;
 };

@@ -25,6 +25,17 @@ void Particle::update(float dt)
 		// (2) New velocity and new positon
 		velocity += accel * dt;
 		position += velocity * dt;
+
+		// (*) Collision with the ground test (temporary)
+		if (position.y < 0.0f)
+		{
+			//cout << "?" << endl;
+			position.y = 0.0f - position.y;
+			velocity.y = -0.0001f * velocity.y;
+			velocity.x = (1 - 0.8f) * velocity.x;
+			velocity.z = (1 - 0.8f) * velocity.z;
+		}
+
 	}
 
 	// (3) zero out the force
