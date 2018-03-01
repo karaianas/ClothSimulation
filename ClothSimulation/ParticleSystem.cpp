@@ -15,7 +15,7 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 		for (int j = 0; j < gridSize; j++)
 		{
 			Particle x = Particle();
-			x.setParams(0.01f, glm::vec3(float(j) * 0.01f, float(i) * 0.01f, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+			x.setParams(0.0001f, glm::vec3(float(j) * 0.01f, float(i) * 0.01f, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 			x.id = count;			
 			// Fix the top row for now
 			if (i == gridSize - 1)
@@ -30,48 +30,132 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 
 	// Create spring-dampers
 	springs = new vector<SpringDamper>();
-	float k_s1 = 50.0f;
-	float k_d1 = 0.1f;
-	float k_s2 = 30.0f;
-	float k_d2 = 0.1f;
+	triangles = new vector<Triangle>();
+
+	float k_s1 = 4.0f;//60
+	float k_d1 = 0.001f;
+	float k_s2 = 4.2f;//40
+	float k_d2 = 0.001f;// 0.05
 
 	for (int i = 0; i < gridSize; i++)
 	{
 		for (int j = 0; j < gridSize; j++)
 		{
-			int curr = gridSize * i + j;
-			int right = gridSize * i + (j + 1);
-			int down = gridSize * (i + 1) + j;
-			int diag = gridSize * (i + 1) + (j + 1);
-			int diag2 = gridSize * (i - 1) + (j + 1);
+			int p[4] = {-1, -1, -1, -1};
+			p[0] = gridSize * i + j;
+
+			int counter = 0;
+			if (j < gridSize - 1)
+			{
+				p[1] = gridSize * i + (j + 1);
+				counter++;
+			}
+			if (i < gridSize - 1)
+			{
+				p[3] = gridSize * (i + 1) + j;
+				counter++;
+			}
+			if (counter == 2)
+				p[2] = gridSize * (i + 1) + (j + 1);
+
+			counter = 0;
+			if (p[1] > 0)
+			{
+				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[1])));
+				s.setParams(k_s1, k_d1);
+				springs->push_back(s);
+				counter++;
+			}
+
+			if (p[3] > 0)
+			{
+				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[3])));
+				s.setParams(k_s1, k_d1);
+				springs->push_back(s);
+				counter++;
+			}
 			
-			if (i != gridSize - 1)
+			if (p[2] > 0)
 			{
-				SpringDamper s(&(particles->at(curr)), &(particles->at(down)));
-				s.setParams(k_s1, k_d1);
+				// Diagonal spring-dampers
+				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[2])));
+				s.setParams(k_s2, k_d2);
 				springs->push_back(s);
 
-				if (j != gridSize - 1)
-				{
-					SpringDamper s(&(particles->at(curr)), &(particles->at(diag)));
-					s.setParams(k_s2, k_d2);
-					springs->push_back(s);
-				}
-			}
-		
-			if (j != gridSize - 1)
-			{
-				SpringDamper s(&(particles->at(curr)), &(particles->at(right)));
-				s.setParams(k_s1, k_d1);
-				springs->push_back(s);
+				SpringDamper s_(&(particles->at(p[1])), &(particles->at(p[3])));
+				s_.setParams(k_s2, k_d2);
+				springs->push_back(s_);
 
-				if (i != 0)
-				{
-					SpringDamper s(&(particles->at(curr)), &(particles->at(diag2)));
-					s.setParams(k_s2, k_d2);
-					springs->push_back(s);
-				}
+				// Triangles
+				Triangle t(&(particles->at(p[0])), &(particles->at(p[1])), &(particles->at(p[3])));
+				Triangle t_(&(particles->at(p[1])), &(particles->at(p[2])), &(particles->at(p[3])));
+				triangles->push_back(t);
+				triangles->push_back(t_);
+				//t.printNormal();
 			}
+		}
+	}
+
+	// Create secondary spring-dampers
+	springs2 = new vector<SpringDamper>();
+	float step = 3;
+	float k_s3 = 2.0f;//60
+	float k_d3 = 0.001f;
+	float k_s4 = 2.0f;//40
+	float k_d4 = 0.001f;// 0.05
+
+	for (int i = 0; i < gridSize; i++)
+	{
+		for (int j = 0; j < gridSize; j++)
+		{
+			int p[4] = { -1, -1, -1, -1 };
+			p[0] = gridSize * i + j;
+
+			int counter = 0;
+			if (j < gridSize - step)
+			{
+				p[1] = gridSize * i + (j + step);
+				counter++;
+			}
+			if (i < gridSize - step)
+			{
+				p[3] = gridSize * (i + step) + j;
+				counter++;
+			}
+			if (counter == 2)
+				p[2] = gridSize * (i + step) + (j + step);
+
+			counter = 0;
+			if (p[1] > 0)
+			{
+				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[1])));
+				s.setParams(k_s3, k_d3);
+				springs->push_back(s);
+				counter++;
+			}
+
+			if (p[3] > 0)
+			{
+				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[3])));
+				s.setParams(k_s3, k_d3);
+				springs->push_back(s);
+				counter++;
+			}
+
+			if (p[2] > 0)
+			{
+				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[2])));
+				s.setParams(k_s4, k_d4);
+				springs->push_back(s);
+			}
+
+			if (counter == 2)
+			{
+				SpringDamper s(&(particles->at(p[1])), &(particles->at(p[3])));
+				s.setParams(k_s4, k_d4);
+				springs->push_back(s);
+			}
+
 		}
 	}
 }
@@ -87,19 +171,11 @@ void ParticleSystem::update(float dt)
 	}
 
 	// (2) Compute elastic force
-	int count = 0;
-	//cout << "--------------" << endl;
 	for (auto spring : *springs)
-	{
 		spring.computeForce();
-		//if (count < 3)
-		//{
-		//	float dist = spring.getDistance();
-		//	cout << dist << endl;
-		//}
-		//count++;
-		
-	}
+
+	for (auto spring : *springs2)
+		spring.computeForce();
 
 	// (3) Integrate
 	for (int i = 0; i < numParticles; i++)
@@ -137,6 +213,9 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 void ParticleSystem::drawInit()
 {
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 

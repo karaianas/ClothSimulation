@@ -2,6 +2,7 @@
 #include "Core.h"
 //#include "Particle.h"
 #include "SpringDamper.h"
+#include "Triangle.h"
 
 using namespace std;
 
@@ -21,6 +22,8 @@ public:
 	int numParticles;
 	vector<Particle>* particles;
 	vector<SpringDamper>* springs;
+	vector<SpringDamper>* springs2;
+	vector<Triangle>* triangles;
 	//Particle * P;
 
 private:
