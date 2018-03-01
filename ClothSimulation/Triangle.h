@@ -8,7 +8,8 @@ class Triangle {
 public:
 	Triangle(Particle* p1, Particle* p2, Particle* p3);
 
-	void computeArea();
+	void setParams(float cd, float rho_);
+	void computeForce(glm::vec3 &v_a);
 	void computeNormal();
 
 	// Check
@@ -18,4 +19,7 @@ public:
 	Particle* P2;
 	Particle* P3;
 	glm::vec3 N;
+
+	float c_d;
+	float rho;
 };

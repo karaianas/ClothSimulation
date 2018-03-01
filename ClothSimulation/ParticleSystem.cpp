@@ -89,6 +89,8 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 				// Triangles
 				Triangle t(&(particles->at(p[0])), &(particles->at(p[1])), &(particles->at(p[3])));
 				Triangle t_(&(particles->at(p[1])), &(particles->at(p[2])), &(particles->at(p[3])));
+				t.setParams(1.0f, 1.23f);
+				t_.setParams(1.0f, 1.23f);
 				triangles->push_back(t);
 				triangles->push_back(t_);
 				//t.printNormal();
@@ -98,6 +100,7 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 
 	// Create secondary spring-dampers
 	springs2 = new vector<SpringDamper>();
+
 	float step = 3;
 	float k_s3 = 2.0f;//60
 	float k_d3 = 0.001f;
@@ -177,6 +180,10 @@ void ParticleSystem::update(float dt)
 	for (auto spring : *springs2)
 		spring.computeForce();
 
+	// (3) Computer aerodynamic force
+	for (auto t : *triangles)
+		t.computeForce(glm::vec3(0.0f, 0.0f, 5.0f));
+
 	// (3) Integrate
 	for (int i = 0; i < numParticles; i++)
 		particles->at(i).update(dt);
@@ -186,11 +193,27 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 {
 	glUseProgram(program);
 
-	positions.clear();
+	/*
+	spositions.clear();
 	for (auto spring : *springs)
 	{
-		positions.push_back(spring.P1->getPos()); 
-		positions.push_back(spring.P2->getPos());
+		spositions.push_back(spring.P1->getPos()); 
+		spositions.push_back(spring.P2->getPos());
+	}
+	*/
+	tpositions.clear();
+	tnormals.clear();
+	for (auto t : *triangles)
+	{
+		tpositions.push_back(t.P1->getPos());
+		tpositions.push_back(t.P2->getPos());
+		tpositions.push_back(t.P3->getPos());
+
+		t.computeNormal();
+		//t.printNormal();
+		tnormals.push_back(t.N);
+		tnormals.push_back(t.N);
+		tnormals.push_back(t.N);
 	}
 
 	drawInit();
@@ -207,7 +230,8 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	glDrawArrays(GL_LINES, 0, positions.size());
+	//glDrawArrays(GL_LINES, 0, spositions.size());
+	glDrawArrays(GL_TRIANGLES, 0, tpositions.size());
 	glBindVertexArray(0);
 }
 
@@ -215,17 +239,26 @@ void ParticleSystem::drawInit()
 {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &VBO2);
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &VBO2);
 
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * positions.size(), positions.data(), GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * spositions.size(), spositions.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * tpositions.size(), tpositions.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * tnormals.size(), tnormals.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);

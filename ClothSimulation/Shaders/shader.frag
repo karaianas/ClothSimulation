@@ -2,7 +2,7 @@
 
 //in vec3 sampleExtraOutput;
 //in vec3 P;
-//in vec3 N;
+in vec3 N;
 //in vec2 lights;
 
 out vec4 color;
@@ -12,7 +12,8 @@ out vec4 color;
 void main()
 {
 	//directional();
-	color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	//color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	color = vec4(N, 1.0f);
 }
 
 /*

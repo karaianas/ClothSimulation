@@ -24,10 +24,11 @@ public:
 	vector<SpringDamper>* springs;
 	vector<SpringDamper>* springs2;
 	vector<Triangle>* triangles;
-	//Particle * P;
 
 private:
-	GLuint VAO, VBO;
+	GLuint VAO, VBO, VBO2;
 	GLuint uMVP, uModel;
-	vector<glm::vec3> positions;
+	vector<glm::vec3> spositions;
+	vector<glm::vec3> tpositions;
+	vector<glm::vec3> tnormals;
 };
