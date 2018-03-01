@@ -43,14 +43,15 @@ void Window::initialize_objects()
 	springConstants.push_back(0.001f);
 
 	float mass = 0.0001;
-	float length = 0.01f;
+	float length = 0.1f;//0.01f
 	float c_d = 1.0f;
 	float rho = 1.23f;
 	int step = 5;
 	int size = 50;
 	ps = new ParticleSystem();
 	ps->setParams(mass, length, springConstants, c_d, rho, step);
-	ps->createMesh(size, glm::vec3(-float(size)/200.0f, 1.0f, 0.0f));
+	ps->createMesh(size, glm::vec3(-float(size)/200.0f * 1.0f/length, 10.0f, -float(size) / 200.0f * 1.0f / length));
+	//ps->createMesh(size, glm::vec3(0.0f, 10.0f, 0.0f));
 
 	ground = new Plane(-0.001f);
 }
