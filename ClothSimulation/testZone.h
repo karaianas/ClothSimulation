@@ -2,8 +2,10 @@
 
 #include "Core.h"
 #include "ParticleSystem.h"
+#include "Plane.h"
 
 ParticleSystem ps;// (31, glm::vec3(0.0f, 0.0f, 0.0f));
+Plane ground(0.0f);
 
 using namespace std;
 

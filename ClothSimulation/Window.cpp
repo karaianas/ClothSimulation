@@ -1,5 +1,4 @@
 #include "Window.h"
-#include "testZone.h"
 
 const char* window_title = "Cloth Simulator";
 GLint shaderProgram;
@@ -26,10 +25,32 @@ glm::vec2 prev_pos;
 bool rotate_flag_L = false;
 bool rotate_flag_R = false;
 
+ParticleSystem* ps;
+Plane* ground;
+
 void Window::initialize_objects()
 {
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
-	test01();
+	vector<float> springConstants;
+	springConstants.push_back(4.0f);
+	springConstants.push_back(0.001f);
+	springConstants.push_back(4.2f);
+	springConstants.push_back(0.001f);
+	springConstants.push_back(2.0f);
+	springConstants.push_back(0.001f);
+	springConstants.push_back(2.0f);
+	springConstants.push_back(0.001f);
+
+	float mass = 0.0001;
+	float length = 0.01f;
+	float c_d = 1.0f;
+	float rho = 1.23f;
+
+	ps = new ParticleSystem();
+	ps->setParams(mass, length, springConstants, c_d, rho);
+	ps->createMesh(31, glm::vec3(0.0f, 0.0f, 0.0f));
+
+	ground = new Plane(-1.0f);
 }
 
 void Window::clean_up()
@@ -110,7 +131,7 @@ void Window::idle_callback()
 		totalTime += dt;
 		//glm::vec3 position = ps.particles->at(0).getPos();
 		//cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
-		ps.update(dt);
+		ps->update(dt);
 	}
 }
 
@@ -124,7 +145,8 @@ void Window::display_callback(GLFWwindow* window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//cout << V[3][0] << " " << V[3][1] << " " << V[3][2] << endl;
-	ps.draw(shaderProgram, P, V);
+	ps->draw(shaderProgram, P, V);
+	ground->draw(shaderProgram, P, V);
 
 	glfwPollEvents();
 	glfwSwapBuffers(window);

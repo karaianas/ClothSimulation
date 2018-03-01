@@ -2,6 +2,8 @@
 
 #include "Core.h"
 #include "Shader.h"
+#include "ParticleSystem.h"
+#include "Plane.h"
 
 class Window
 {
