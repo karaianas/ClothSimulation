@@ -29,11 +29,7 @@ bool rotate_flag_R = false;
 void Window::initialize_objects()
 {
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
-	//for (int i = 0; i < 10; i++)
-	//{
-	//	cout << ps.springs->at(i).restLength << endl;
-	//}
-	//ps.printSprings();
+	test01();
 }
 
 void Window::clean_up()
@@ -141,16 +137,24 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_ESCAPE)
 		{
 			glfwSetWindowShouldClose(window, GL_TRUE);
-			//std::cout << "ffff" << std::endl;
 		}
 
-		// test
-		if (key == GLFW_KEY_T)
+		// Play/pause
+		if (key == GLFW_KEY_SPACE)
 		{
 			if (isTest)
 				isTest = false;
 			else
 				isTest = true;
+		}
+
+		// Wireframe mode
+		if (key == GLFW_KEY_W)
+		{
+			if (wireframe)
+				wireframe = false;
+			else
+				wireframe = true;
 		}
 
 	}

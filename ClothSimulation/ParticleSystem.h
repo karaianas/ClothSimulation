@@ -8,7 +8,10 @@ using namespace std;
 
 class ParticleSystem {
 public:
-	ParticleSystem(int gridSize, glm::vec3 offset);
+	ParticleSystem();
+
+	void setParams(float m, float len, vector<float> springC, float drag, float den);
+	void createMesh(int gridSize, glm::vec3 offset);
 
 	void update(float dt);
 	void draw(GLuint program, glm::mat4 P, glm::mat4 V);
@@ -31,4 +34,9 @@ private:
 	vector<glm::vec3> spositions;
 	vector<glm::vec3> tpositions;
 	vector<glm::vec3> tnormals;
+
+	// Coefficients
+	float k_s1, k_d1, k_s2, k_d2, k_s3, k_d3, k_s4, k_d4;
+	float mass, length;
+	float c_d, rho;
 };

@@ -2,7 +2,28 @@
 
 using namespace std;
 
-ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
+ParticleSystem::ParticleSystem()
+{
+}
+
+void ParticleSystem::setParams(float m, float len, vector<float> springC, float drag, float den)
+{
+	k_s1 = springC[0];
+	k_d1 = springC[1];
+	k_s2 = springC[2];
+	k_d2 = springC[3];
+	k_s3 = springC[4];
+	k_d3 = springC[5];
+	k_s4 = springC[6];
+	k_d4 = springC[7];
+
+	mass = m;
+	length = len;
+	c_d = drag;
+	rho = den;
+}
+
+void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 {
 	numParticles = gridSize * gridSize;
 
@@ -15,7 +36,7 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 		for (int j = 0; j < gridSize; j++)
 		{
 			Particle x = Particle();
-			x.setParams(0.0001f, glm::vec3(float(j) * 0.01f, float(i) * 0.01f, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+			x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 			x.id = count;			
 			// Fix the top row for now
 			if (i == gridSize - 1)
@@ -31,11 +52,6 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 	// Create spring-dampers
 	springs = new vector<SpringDamper>();
 	triangles = new vector<Triangle>();
-
-	float k_s1 = 4.0f;//60
-	float k_d1 = 0.001f;
-	float k_s2 = 4.2f;//40
-	float k_d2 = 0.001f;// 0.05
 
 	for (int i = 0; i < gridSize; i++)
 	{
@@ -89,8 +105,8 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 				// Triangles
 				Triangle t(&(particles->at(p[0])), &(particles->at(p[1])), &(particles->at(p[3])));
 				Triangle t_(&(particles->at(p[1])), &(particles->at(p[2])), &(particles->at(p[3])));
-				t.setParams(1.0f, 1.23f);
-				t_.setParams(1.0f, 1.23f);
+				t.setParams(c_d, rho);
+				t_.setParams(c_d, rho);
 				triangles->push_back(t);
 				triangles->push_back(t_);
 				//t.printNormal();
@@ -100,12 +116,7 @@ ParticleSystem::ParticleSystem(int gridSize, glm::vec3 offset)
 
 	// Create secondary spring-dampers
 	springs2 = new vector<SpringDamper>();
-
 	float step = 3;
-	float k_s3 = 2.0f;//60
-	float k_d3 = 0.001f;
-	float k_s4 = 2.0f;//40
-	float k_d4 = 0.001f;// 0.05
 
 	for (int i = 0; i < gridSize; i++)
 	{
@@ -180,11 +191,11 @@ void ParticleSystem::update(float dt)
 	for (auto spring : *springs2)
 		spring.computeForce();
 
-	// (3) Computer aerodynamic force
+	// (3) Compute aerodynamic force
 	for (auto t : *triangles)
 		t.computeForce(glm::vec3(0.0f, 0.0f, 5.0f));
 
-	// (3) Integrate
+	// (4) Integrate
 	for (int i = 0; i < numParticles; i++)
 		particles->at(i).update(dt);
 }
@@ -201,6 +212,7 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		spositions.push_back(spring.P2->getPos());
 	}
 	*/
+
 	tpositions.clear();
 	tnormals.clear();
 	for (auto t : *triangles)
