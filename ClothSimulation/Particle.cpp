@@ -5,6 +5,7 @@ using namespace std;
 Particle::Particle()
 {
 	isFixed = false;
+	ncounter = 0;
 }
 
 void Particle::setParams(float m, glm::vec3 p, glm::vec3 v, glm::vec3 f)
@@ -30,7 +31,7 @@ void Particle::update(float dt)
 		if (position.y < 0.0f)
 		{
 			//cout << "?" << endl;
-			position.y = 0.0f - position.y;
+			position.y = 0.0f - position.y;// 2 * h - pos.y
 			velocity.y = -0.0001f * velocity.y;
 			velocity.x = (1 - 0.8f) * velocity.x;
 			velocity.z = (1 - 0.8f) * velocity.z;
@@ -44,4 +45,16 @@ void Particle::update(float dt)
 	//cout << id << ": " << position.x << " " << position.y << " " << position.z << endl;
 	//cout << id << ": " << accel.x << " " << accel.y << " " << accel.z << endl;
 	//cout << id << ": " << velocity.x << " " << velocity.y << " " << velocity.z << endl;
-} 
+}
+
+void Particle::addNormal(glm::vec3 &N)
+{
+	normal += N;
+	ncounter++;
+}
+
+void Particle::computeNormal()
+{
+	normal /= float(ncounter);
+	normal = glm::normalize(normal);
+}

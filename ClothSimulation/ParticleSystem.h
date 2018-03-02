@@ -15,6 +15,8 @@ public:
 	void createRope();
 	void attachRope(glm::vec2 indices);
 
+	void createBox();
+
 	void drop();
 	void update(float dt);
 	void draw(GLuint program, glm::mat4 P, glm::mat4 V);
