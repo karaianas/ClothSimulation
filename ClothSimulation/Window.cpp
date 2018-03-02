@@ -44,33 +44,17 @@ void Window::initialize_objects()
 	springConstants.push_back(0.001f);
 
 	float mass = 0.0001;
-	float length = 0.01f;//0.01f
+	float length = 0.03f;//0.01f
 	float c_d = 1.0f;//1.0f
 	float rho = 1.23f;
 	int step = 5;
-	int size = 50;
+	int size = 51;
 	cloth = new ParticleSystem();
-	cloth->setParams(mass, length, springConstants, c_d, rho, 5, 5);// 51 5
-	//cloth->createMesh(size, glm::vec3(-float(size)/200.0f * 1.0f/length, 10.0f, -float(size) / 200.0f * 1.0f / length));
-	//cloth->createMesh(size, size * 2, glm::vec3(-float(size * length)/2.0f, 1.0f, 0.0f));
-	
+	cloth->setParams(mass, length, springConstants, c_d, rho, 10, 10);
 	//cloth->createMesh(51, 51 * 2, glm::vec3(-float(size * length) / 2.0f, 1.0f, 0.0f));
-	cloth->createMesh(51, 51, glm::vec3(-float(size * length) / 2.0f, 1.0f, 0.0f));
+	cloth->createMesh(size, size, glm::vec3(-float(size * length) / 2.0f, 5.0f, 0.0f));
 	cloth->attachRope();
-	cloth->createBox();
-
-	//vector<float> springConstants2;
-	//springConstants2.push_back(300.0f);
-	//springConstants2.push_back(0.01f);
-	//springConstants2.push_back(300.2f);
-	//springConstants2.push_back(0.01f);
-	//springConstants2.push_back(20.0f);// 2.0f
-	//springConstants2.push_back(0.001f);
-	//springConstants2.push_back(100.0f);// 2.0f
-	//springConstants2.push_back(0.001f);
-	////ropes = new ParticleSystem();
-	////ropes->setParams(0.001f, 0.01f, springConstants2, c_d, rho, 2, 3);
-	////ropes->createMesh(2, 50, glm::vec3(1.0f, 0.5f, 0.0f));
+	cloth->attachBox();
 
 	ground = new Plane(-0.001f);
 }

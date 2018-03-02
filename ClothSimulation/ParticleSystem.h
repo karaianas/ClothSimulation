@@ -12,9 +12,10 @@ public:
 
 	void setParams(float m, float len, vector<float> springC, float drag, float den, int stepw, int steph);
 	void createMesh(int width, int height, glm::vec3 offset);
-	void createRope();
-	void attachRope(glm::vec2 indices);
+	void attachRope();
+	void createRope(glm::vec2 indices);
 
+	void attachBox();
 	void createBox();
 
 	void drop();
@@ -36,10 +37,15 @@ public:
 private:
 	GLuint VAO, VBO, VBO2;
 	GLuint uMVP, uModel, uColor;
+
 	vector<glm::vec3> spositions;
 	vector<glm::vec3> tpositions;
 	vector<glm::vec3> tnormals;
+
+	// attach: attaching points of cloth / attach2: of ropes
 	vector<int> attach;
+	vector<int> attach2;
+	vector<int> attach3;
 
 	// Coefficients
 	float k_s1, k_d1, k_s2, k_d2, k_s3, k_d3, k_s4, k_d4;

@@ -49,10 +49,11 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 			x.id = count;
 
 			// Fix the top row initially
-			if (i == height - 1)
-			{
-				x.isFixed = true;
-			}
+			//if (i == height - 1)
+			//{
+			//	x.isFixed = true;
+			//}
+			x.isFixed = true;
 			count++;
 			particles->push_back(x);
 		}
@@ -184,13 +185,13 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 	}
 }
 
-void ParticleSystem::createRope()
+void ParticleSystem::attachRope()
 {
 	for (int i = 0; i < attach.size() - 1; i += 2)
-		attachRope(glm::vec2(attach[i], attach[i + 1]));
+		createRope(glm::vec2(attach[i], attach[i + 1]));
 }
 
-void ParticleSystem::attachRope(glm::vec2 indices)
+void ParticleSystem::createRope(glm::vec2 indices)
 {
 	int hr = 50;
 	int wr = 2;
@@ -206,30 +207,44 @@ void ParticleSystem::attachRope(glm::vec2 indices)
 	float k_s4r = 100.0f;
 	float k_d4r = 0.001f;
 
+	float c_dr = c_d;// *0.1f;
+
 	int dwr = 2;
 	int dhr = 3;
 
 	glm::vec3 p1 = particles->at(indices[0]).getPos();
 	glm::vec3 p2 = particles->at(indices[1]).getPos();
 
-	int count = numParticles;
+	int count = particles->size();
 	vector<Particle>* rparticles = new vector<Particle>();
 
 	for (int i = 0; i < hr; i++)
 	{
 		Particle x = Particle();
-		x.setParams(mr, p1 - glm::vec3(0.0f, float(i + 1) * lr, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+		glm::vec3 pos1 = p1 - glm::vec3(0.0f, float(i + 1) * lr, 0.0f);
+		//pos1.x *= float(hr - i) / float(hr);
+		//pos1.z *= float(hr - i) / float(hr);
+		x.setParams(mr, pos1, glm::vec3(0.0f), glm::vec3(0.0f));
 		x.id = count;
 		count++;
 		rparticles->push_back(x);
 
 		Particle y = Particle();
-		y.setParams(mr, p2 - glm::vec3(0.0f, float(i + 1) * lr, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+		glm::vec3 pos2 = p2 - glm::vec3(0.0f, float(i + 1) * lr, 0.0f);
+		//pos2.x *= float(hr - i) / float(hr);
+		//pos2.z *= float(hr - i) / float(hr);
+		y.setParams(mr, pos2, glm::vec3(0.0f), glm::vec3(0.0f));
 		y.id = count;
 		count++;
 		rparticles->push_back(y);
 
 		numParticles += 2;
+
+		if (i == hr - 1)
+		{
+			attach2.push_back(x.id);
+			attach2.push_back(y.id);
+		}
 	}
 
 	vector<glm::vec3> tid;
@@ -341,7 +356,7 @@ void ParticleSystem::attachRope(glm::vec2 indices)
 		t2 = tid[i].y;
 		t3 = tid[i].z;
 		Triangle t(&(particles->at(t3)), &(particles->at(t2)), &(particles->at(t1)));
-		t.setParams(c_d, rho);
+		t.setParams(c_dr, rho);
 		triangles->push_back(t);
 	}
 
@@ -420,9 +435,51 @@ void ParticleSystem::attachRope(glm::vec2 indices)
 	triangles->push_back(bBA);
 }
 
+void ParticleSystem::attachBox()
+{
+	createBox();
+
+	vector<int> rearr;
+	rearr.push_back(attach3[3]);
+	rearr.push_back(attach3[2]);
+	rearr.push_back(attach3[0]);
+	rearr.push_back(attach3[1]);
+
+	for (int i = 0; i < attach3.size(); i++)
+	{
+		int c1 = attach2[2 * i];
+		int c2 = attach2[2 * i + 1];
+		int b = rearr[i];
+
+		// Create triangle
+		Triangle t(&(particles->at(c1)), &(particles->at(b)), &(particles->at(c2)));
+		t.setParams(c_d, rho);
+		triangles->push_back(t);
+
+		// Create springs
+		SpringDamper s1(&(particles->at(c1)), &(particles->at(b)));
+		s1.setParams(40.0f, 0.0f);
+		s1.l_0 = 0.01f;
+		SpringDamper s2(&(particles->at(c2)), &(particles->at(b)));
+		s2.l_0 = 0.01f;
+		s2.setParams(40.0f, 0.0f);
+
+		springs->push_back(s1);
+		springs->push_back(s2);
+	}
+}
+
 void ParticleSystem::createBox()
 {
-	glm::vec3 offset(0.0f, 2.0f, 0.0f);
+	//glm::vec3 offset(0.0f, 2.0f, 0.0f);
+	glm::vec3 avg(0.0f);
+	for (int i = 0; i < attach2.size(); i ++)
+	{
+		int id = attach2[i];
+		avg += particles->at(id).getPos();
+	}
+	avg /= float(attach2.size());
+	avg -= glm::vec3(0.0f, 0.1f, 0.0f);
 
 	vector<glm::vec3> vertices;
 	vertices.push_back(glm::vec3(-1, -1, 1));
@@ -444,18 +501,21 @@ void ParticleSystem::createBox()
 	for (int i = 0; i < vertices.size(); i++)
 	{
 		Particle x = Particle();
-		x.setParams(0.1f, (vertices[i] + offset) * scaleFactor, glm::vec3(0.0f), glm::vec3(0.0f));
+		x.setParams(0.1f, vertices[i] * scaleFactor + avg, glm::vec3(0.0f), glm::vec3(0.0f));
 		x.id = count;
 		particles->push_back(x);
 		pid.push_back(count);
 		count++;
+
+		if (i > 3)
+			attach3.push_back(x.id);
 	}
 
 	// Create springs
 	int scounter = 0;
-	float ks = 100.0f;//4.0f
-	float kd = 0.01f;
-	for (int i = 0; i < pid.size(); i++)
+	float ks = 100.0f;//300.0f
+	float kd = 0.1f;
+	for(int i = 0; i < pid.size(); i++)
 	{
 		for (int j = i + 1; j < pid.size(); j++)
 		{
@@ -523,12 +583,16 @@ void ParticleSystem::createBox()
 
 void ParticleSystem::drop()
 {
-	for (int i = w * (h - 1); i < numParticles; i++)
-		particles->at(i).isFixed = false;
+	//for (int i = w * (h - 1); i < numParticles; i++)
+	//	particles->at(i).isFixed = false;
 	//for (auto p : *particles)
 	//{
 	//	p.isFixed = false;
 	//}
+	for (int i = 0; i < particles->size(); i++)
+	{
+		particles->at(i).isFixed = false;
+	}
 }
 
 void ParticleSystem::update(float dt)
