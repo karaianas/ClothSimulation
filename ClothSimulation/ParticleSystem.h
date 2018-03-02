@@ -12,7 +12,8 @@ public:
 
 	void setParams(float m, float len, vector<float> springC, float drag, float den, int stepw, int steph);
 	void createMesh(int width, int height, glm::vec3 offset);
-	void createRope(int ropeSize, glm::vec3 offset);
+	void createRope();
+	void attachRope(glm::vec2 indices);
 
 	void drop();
 	void update(float dt);
@@ -36,6 +37,7 @@ private:
 	vector<glm::vec3> spositions;
 	vector<glm::vec3> tpositions;
 	vector<glm::vec3> tnormals;
+	vector<int> attach;
 
 	// Coefficients
 	float k_s1, k_d1, k_s2, k_d2, k_s3, k_d3, k_s4, k_d4;

@@ -40,7 +40,12 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 		for (int j = 0; j < width; j++)
 		{
 			Particle x = Particle();
-			x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+			if (((i == 0) || (i == height - 1)) && ((j == 0) || (j == 1) || (j == width - 2) || (j == width - 1)))
+			{
+				//x.setParams(mass * 10.0f, glm::vec3(float(j) * length, 0, float(i) * length) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+				attach.push_back(count);
+			}
+			x.setParams(mass, glm::vec3(float(j) * length, 0, float(i) * length) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 			x.id = count;
 
 			// Fix the top row initially
@@ -90,7 +95,7 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 			if (p[3] > 0)
 			{
 				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[3])));
-				s.setParams(k_s1 * float(dh)/float(dw), k_d1* float(dh) / float(dw));
+				s.setParams(k_s1 , k_d1);
 				springs->push_back(s);
 				counter++;
 			}
@@ -120,9 +125,12 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 
 	// Create secondary spring-dampers
 	springs2 = new vector<SpringDamper>();
-
+	int wth = 0;
 	if (dw <= 0 || dh <= 0)
+	{
+		//cout << "???" << endl;
 		return;
+	}
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width; j++)
@@ -130,67 +138,307 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 			int p[4] = { -1, -1, -1, -1 };
 			p[0] = width * i + j;
 
-			int counter = 0;
-			if (j < width - dw)
+			//std::cout << "j = " << j << " i = " << i << endl;
+			//std::cout << "width - dw = " << width - dw << " height - dh = " << height - dh << endl;
+
+			if ((j <= width - dw) && (i <= height - dh))
 			{
-				p[1] = width * i + (j + dw);
+				p[1] = width * i + (j + dw - 1);
+				p[2] = width * (i + dh - 1) + (j + dw - 1);
+				p[3] = width * (i + dh - 1) + j;
+
+				//std::cout << p[0] << " " << p[1] << " " << p[2] << " " << p[3] << endl;
+
+				// Top
+				SpringDamper s0(&(particles->at(p[3])), &(particles->at(p[2])));
+				s0.setParams(k_s3, k_d3);
+				springs->push_back(s0);
+
+				// Bottom
+				SpringDamper s1(&(particles->at(p[0])), &(particles->at(p[1])));
+				s1.setParams(k_s3, k_d3);
+				springs->push_back(s1);
+
+				// Diag
+				SpringDamper s2(&(particles->at(p[0])), &(particles->at(p[2])));
+				s2.setParams(k_s4, k_d4);
+				springs->push_back(s2);
+
+				// Diag
+				SpringDamper s3(&(particles->at(p[1])), &(particles->at(p[3])));
+				s3.setParams(k_s4, k_d4);
+				springs->push_back(s3);
+
+				// Left
+				SpringDamper s4(&(particles->at(p[0])), &(particles->at(p[3])));
+				s4.setParams(k_s3, k_d3);
+				springs->push_back(s4);
+
+				// Right
+				SpringDamper s5(&(particles->at(p[1])), &(particles->at(p[2])));
+				s5.setParams(k_s3, k_d3);
+				springs->push_back(s5);
+				wth += 6;
+			}
+		}
+	}
+}
+
+void ParticleSystem::createRope()
+{
+	for (int i = 0; i < attach.size() - 1; i += 2)
+	{
+		//cout << attach[i] << " " << attach[i + 1] << endl;
+		attachRope(glm::vec2(attach[i], attach[i + 1]));
+	}
+}
+
+void ParticleSystem::attachRope(glm::vec2 indices)
+{
+	int hr = 50;
+	int wr = 2;
+	float mr = 0.001f;
+	float lr = 0.01f;
+
+	float k_s1r = 300.0f;
+	float k_d1r = 0.01f;
+	float k_s2r = 300.2f;
+	float k_d2r = 0.01f;
+	float k_s3r = 20.0f;
+	float k_d3r = 0.001f;
+	float k_s4r = 100.0f;
+	float k_d4r = 0.001f;
+
+	int dwr = 2;
+	int dhr = 3;
+
+	glm::vec3 p1 = particles->at(indices[0]).getPos();
+	glm::vec3 p2 = particles->at(indices[1]).getPos();
+
+	int count = numParticles;
+	vector<Particle>* rparticles = new vector<Particle>();
+
+	for (int i = 0; i < hr; i++)
+	{
+		Particle x = Particle();
+		x.setParams(mr, p1 - glm::vec3(0.0f, float(i + 1) * lr, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+		x.id = count;
+		count++;
+		rparticles->push_back(x);
+
+		Particle y = Particle();
+		y.setParams(mr, p2 - glm::vec3(0.0f, float(i + 1) * lr, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+		y.id = count;
+		count++;
+		rparticles->push_back(y);
+
+		numParticles += 2;
+	}
+
+	vector<glm::vec3> tid;
+	vector<glm::vec3> sid;
+
+	for (int i = 0; i < hr; i++)
+	{
+		for (int j = 0; j < wr; j++)
+		{
+			int p[4] = { -1, -1, -1, -1 };
+			p[0] = wr * i + j;
+
+			int t0, t1, t2, t3;
+			t0 = rparticles->at(p[0]).id;
+
+			int counter = 0;
+			if (j < wr - 1)
+			{
+				p[1] = wr * i + (j + 1);
+				t1 = rparticles->at(p[1]).id;
 				counter++;
 			}
-			if (i < height - dh)
+			if (i < hr - 1)
 			{
-				p[3] = width * (i + dh) + j;
+				p[3] = wr * (i + 1) + j;
+				t3 = rparticles->at(p[3]).id;
 				counter++;
 			}
 			if (counter == 2)
-				p[2] = width * (i + dh) + (j + dw);
-
-			counter = 0;
-			if (p[1] > 0)
 			{
-				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[1])));
-				s.setParams(k_s3, k_d3);
-				springs->push_back(s);
-				counter++;
+				p[2] = wr * (i + 1) + (j + 1);
+				t2 = rparticles->at(p[2]).id;
 			}
+
+			if (p[1] > 0)
+				sid.push_back(glm::vec3(0, t0, t1));
 
 			if (p[3] > 0)
-			{
-				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[3])));
-				s.setParams(k_s3, k_d3);
-				springs->push_back(s);
-				counter++;
-			}
+				sid.push_back(glm::vec3(0, t0, t3));
 
 			if (p[2] > 0)
 			{
-				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[2])));
-				s.setParams(k_s4, k_d4);
-				springs->push_back(s);
-			}
+				// Springs
+				sid.push_back(glm::vec3(1, t0, t2));
+				sid.push_back(glm::vec3(1, t1, t3));
 
-			if (counter == 2)
-			{
-				SpringDamper s(&(particles->at(p[1])), &(particles->at(p[3])));
-				s.setParams(k_s4, k_d4);
-				springs->push_back(s);
+				// Triangles
+				tid.push_back(glm::vec3(t0, t1, t3));
+				tid.push_back(glm::vec3(t1, t2, t3));
 			}
 		}
 	}
 
+
+	// Create secondary spring-dampers
+	//if (dwr <= 0 || dhr <= 0)
+	//	return;
+
+	vector<glm::vec3> sid2;
+
+	for (int i = 0; i < hr; i++)
+	{
+		for (int j = 0; j < wr; j++)
+		{
+			int p[4] = { -1, -1, -1, -1 };
+			p[0] = wr* i + j;
+
+			int t0, t1, t2, t3;
+			t0 = rparticles->at(p[0]).id;
+
+			if ((j <= wr - dwr) && (i <= hr - dhr))
+			{
+				p[1] = wr * i + (j + dwr - 1);
+				p[2] = wr * (i + dhr - 1) + (j + dwr - 1);
+				p[3] = wr * (i + dhr - 1) + j;
+
+				t1 = rparticles->at(p[1]).id;
+				t2 = rparticles->at(p[2]).id;
+				t3 = rparticles->at(p[3]).id;
+
+				// Top
+				sid2.push_back(glm::vec3(0, t3, t2));
+
+				// Bottom
+				sid2.push_back(glm::vec3(0, t0, t1));
+
+				// Diag
+				sid2.push_back(glm::vec3(1, t0, t2));
+
+				// Diag
+				sid2.push_back(glm::vec3(1, t1, t3));
+
+				// Left
+				sid2.push_back(glm::vec3(0, t0, t3));
+
+				// Right
+				sid2.push_back(glm::vec3(0, t1, t2));
+			}
+		}
+	}
+
+	for (auto p : *rparticles)
+		particles->push_back(p);
+
+	for (int i = 0; i < tid.size(); i++)
+	{
+		int t1, t2, t3;
+		t1 = tid[i].x;
+		t2 = tid[i].y;
+		t3 = tid[i].z;
+		Triangle t(&(particles->at(t3)), &(particles->at(t2)), &(particles->at(t1)));
+		t.setParams(c_d, rho);
+		triangles->push_back(t);
+	}
+
+	for (int i = 0; i < sid.size(); i++)
+	{
+		int s1, s2, s3;
+		s1 = sid[i].x;
+		s2 = sid[i].y;
+		s3 = sid[i].z;
+
+		if (s1 < 1)
+		{
+			SpringDamper s(&(particles->at(s2)), &(particles->at(s3)));
+			s.setParams(k_s1r, k_d1r);
+			springs->push_back(s);
+		}
+		else
+		{
+			SpringDamper s(&(particles->at(s2)), &(particles->at(s3)));
+			s.setParams(k_s2r, k_d2r);
+			springs->push_back(s);
+		}
+	}
+
+	for (int i = 0; i < sid2.size(); i++)
+	{
+		int s1, s2, s3;
+		s1 = sid2[i].x;
+		s2 = sid2[i].y;
+		s3 = sid2[i].z;
+
+		if (s1 < 1)
+		{
+			SpringDamper s(&(particles->at(s2)), &(particles->at(s3)));
+			s.setParams(k_s3r, k_d3r);
+			springs->push_back(s);
+		}
+		else
+		{
+			SpringDamper s(&(particles->at(s2)), &(particles->at(s3)));
+			s.setParams(k_s4r, k_d4r);
+			springs->push_back(s);
+		}
+	}
+
+	// Connecting springs
+	int A, B, a, b;
+	A = particles->at(indices[0]).id;
+	B = particles->at(indices[1]).id;
+	a = rparticles->at(0).id;
+	b = rparticles->at(1).id;
+
+	SpringDamper sa(&(particles->at(A)), &(particles->at(a)));
+	sa.setParams(k_s3r, k_d3r);
+	springs->push_back(sa);
+
+	SpringDamper sb(&(particles->at(B)), &(particles->at(b)));
+	sb.setParams(k_s3r, k_d3r);
+	springs->push_back(sb);
+
+	SpringDamper sAb(&(particles->at(A)), &(particles->at(b)));
+	sAb.setParams(k_s4r, k_d4r);
+	springs->push_back(sAb);
+
+	SpringDamper saB(&(particles->at(a)), &(particles->at(B)));
+	saB.setParams(k_s4r, k_d4r);
+	springs->push_back(saB);
+
+	// Triangles
+	Triangle abA(&(particles->at(a)), &(particles->at(b)), &(particles->at(A)));
+	abA.setParams(c_d, rho);
+	triangles->push_back(abA);
+
+	Triangle bBA(&(particles->at(b)), &(particles->at(B)), &(particles->at(A)));
+	bBA.setParams(c_d, rho);
+	triangles->push_back(bBA);
 }
 
 void ParticleSystem::drop()
 {
-	int num = sqrt(numParticles);
 	for (int i = w * (h - 1); i < numParticles; i++)
 		particles->at(i).isFixed = false;
+	//for (auto p : *particles)
+	//{
+	//	p.isFixed = false;
+	//}
 }
 
 void ParticleSystem::update(float dt)
 {
+
 	// (1) Compute gravitational force
 	glm::vec3 g(0, -9.8, 0);
-	for (int i = 0; i < numParticles; i++)
+	for (int i = 0; i < particles->size(); i++)
 	{
 		glm::vec3 f = g * particles->at(i).getMass();
 		particles->at(i).applyForce(f);
@@ -208,15 +456,20 @@ void ParticleSystem::update(float dt)
 		t.computeForce(glm::vec3(0.0f, 0.0f, 5.0f));//5
 
 	// (4) Integrate
-	for (int i = 0; i < numParticles; i++)
+	for (int i = 0; i < particles->size(); i++)
 		particles->at(i).update(dt);
+
 }
 
 void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 {
 	glUseProgram(program);
 
-	//spositions.clear();
+	spositions.clear();
+	for (auto p : *particles)
+	{
+		spositions.push_back(p.getPos());
+	}
 	//for (auto spring : *springs)
 	//{
 	//	spositions.push_back(spring.P1->getPos()); 
@@ -232,10 +485,10 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		tpositions.push_back(t.P3->getPos());
 
 		t.computeNormal();
-		//t.printNormal();
 		tnormals.push_back(t.N);
 		tnormals.push_back(t.N);
 		tnormals.push_back(t.N);
+
 	}
 
 	drawInit();
@@ -254,7 +507,8 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	//glDrawArrays(GL_LINES, 0, spositions.size());
+	//glDrawArrays(GL_POINTS, 0, spositions.size());
+	//glDrawArrays(GL_POINTS, 0, tpositions.size());
 	glDrawArrays(GL_TRIANGLES, 0, tpositions.size());
 	glBindVertexArray(0);
 }

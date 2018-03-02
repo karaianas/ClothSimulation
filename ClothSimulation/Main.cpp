@@ -55,7 +55,8 @@ void setup_opengl_settings()
 	// Disable backface culling to render both sides of polygons
 	glDisable(GL_CULL_FACE);
 	// Set clear color
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
 }
 
 void print_versions()

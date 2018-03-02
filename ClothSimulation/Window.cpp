@@ -38,9 +38,9 @@ void Window::initialize_objects()
 	springConstants.push_back(0.001f);
 	springConstants.push_back(4.2f);
 	springConstants.push_back(0.001f);
-	springConstants.push_back(1.0f);// 2.0f
+	springConstants.push_back(1.0f);// 1.0f
 	springConstants.push_back(0.001f);
-	springConstants.push_back(1.0f);// 2.0f
+	springConstants.push_back(1.2f);// 1.0f
 	springConstants.push_back(0.001f);
 
 	float mass = 0.0001;
@@ -50,9 +50,12 @@ void Window::initialize_objects()
 	int step = 5;
 	int size = 50;
 	cloth = new ParticleSystem();
-	cloth->setParams(mass, length, springConstants, c_d, rho, 5, 5);
+	cloth->setParams(mass, length, springConstants, c_d, rho, 5, 5);// 51 5
 	//cloth->createMesh(size, glm::vec3(-float(size)/200.0f * 1.0f/length, 10.0f, -float(size) / 200.0f * 1.0f / length));
-	cloth->createMesh(size, size * 2, glm::vec3(0.0f, 1.0f, 0.0f));
+	//cloth->createMesh(size, size * 2, glm::vec3(-float(size * length)/2.0f, 1.0f, 0.0f));
+	cloth->createMesh(51, 51, glm::vec3(-float(size * length) / 2.0f, 1.0f, 0.0f));
+	//cloth->attachRope(glm::vec2(0, 1));
+	cloth->createRope();
 
 	vector<float> springConstants2;
 	springConstants2.push_back(300.0f);
@@ -63,9 +66,9 @@ void Window::initialize_objects()
 	springConstants2.push_back(0.001f);
 	springConstants2.push_back(100.0f);// 2.0f
 	springConstants2.push_back(0.001f);
-	ropes = new ParticleSystem();
-	ropes->setParams(0.001f, 0.01f, springConstants2, c_d, rho, 2, 3);
-	ropes->createMesh(2, 50, glm::vec3(0.0f, 0.5f, 0.0f));
+	//ropes = new ParticleSystem();
+	//ropes->setParams(0.001f, 0.01f, springConstants2, c_d, rho, 2, 3);
+	//ropes->createMesh(2, 50, glm::vec3(1.0f, 0.5f, 0.0f));
 
 	ground = new Plane(-0.001f);
 }
@@ -148,8 +151,8 @@ void Window::idle_callback()
 		totalTime += dt;
 		//glm::vec3 position = cloth.particles->at(0).getPos();
 		//cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
-		//cloth->update(dt);
-		ropes->update(dt);
+		cloth->update(dt);
+		//ropes->update(dt);
 	}
 }
 
@@ -163,8 +166,8 @@ void Window::display_callback(GLFWwindow* window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//cout << V[3][0] << " " << V[3][1] << " " << V[3][2] << endl;
-	//cloth->draw(shaderProgram, P, V);
-	ropes->draw(shaderProgram, P, V);
+	cloth->draw(shaderProgram, P, V);
+	//ropes->draw(shaderProgram, P, V);
 	ground->draw(shaderProgram, P, V);
 
 	glfwPollEvents();
@@ -202,7 +205,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			isDrop = true;
 			cloth->drop();
-			ropes->drop();
+			//ropes->drop();
 		}
 
 	}
