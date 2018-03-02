@@ -45,15 +45,15 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 				//x.setParams(mass * 10.0f, glm::vec3(float(j) * length, 0, float(i) * length) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 				attach.push_back(count);
 			}
-			x.setParams(mass, glm::vec3(float(j) * length, 0, float(i) * length) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+			x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0 ) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 			x.id = count;
 
 			// Fix the top row initially
-			//if (i == height - 1)
-			//{
-			//	x.isFixed = true;
-			//}
-			x.isFixed = true;
+			if (i == height - 1)
+			{
+				x.isFixed = true;
+			}
+			//x.isFixed = true;
 			count++;
 			particles->push_back(x);
 		}

@@ -1,6 +1,6 @@
 #include "Window.h"
 
-const char* window_title = "Cloth Simulator";
+const char* window_title = "parachute Simulator";
 GLint shaderProgram;
 
 // On some systems you need to change this to the absolute path
@@ -26,6 +26,7 @@ glm::vec2 prev_pos;
 bool rotate_flag_L = false;
 bool rotate_flag_R = false;
 
+ParticleSystem* parachute;
 ParticleSystem* cloth;
 ParticleSystem* ropes;
 Plane* ground;
@@ -43,18 +44,30 @@ void Window::initialize_objects()
 	springConstants.push_back(1.2f);// 1.0f
 	springConstants.push_back(0.001f);
 
+	// Parachute demo
 	float mass = 0.0001;
 	float length = 0.03f;//0.01f
 	float c_d = 1.0f;//1.0f
 	float rho = 1.23f;
-	int step = 5;
+	int step = 10;
 	int size = 51;
+	parachute = new ParticleSystem();
+	parachute->setParams(mass, length, springConstants, c_d, rho, step, step);
+	//parachute->createMesh(51, 51 * 2, glm::vec3(-float(size * length) / 2.0f, 1.0f, 0.0f));
+	parachute->createMesh(size, size, glm::vec3(-float(size * length) / 2.0f, 5.0f, 0.0f));
+	parachute->attachRope();
+	parachute->attachBox();
+
+	// Cloth demo
+	mass = 0.0001;
+	length = 0.01f;//0.01f
+	c_d = 1.0f;//1.0f
+	rho = 1.23f;
+	step = 5;
+	size = 51;
 	cloth = new ParticleSystem();
-	cloth->setParams(mass, length, springConstants, c_d, rho, 10, 10);
-	//cloth->createMesh(51, 51 * 2, glm::vec3(-float(size * length) / 2.0f, 1.0f, 0.0f));
-	cloth->createMesh(size, size, glm::vec3(-float(size * length) / 2.0f, 5.0f, 0.0f));
-	cloth->attachRope();
-	cloth->attachBox();
+	cloth->setParams(mass, length, springConstants, c_d, rho, step, step);
+	cloth->createMesh(size, size * 2, glm::vec3(-float(size * length) / 2.0f, 0.5f, 0.0f));
 
 	ground = new Plane(-0.001f);
 }
@@ -135,8 +148,9 @@ void Window::idle_callback()
 	{
 		float dt = 0.001f;// 0.001f
 		totalTime += dt;
-		//glm::vec3 position = cloth.particles->at(0).getPos();
+		//glm::vec3 position = parachute.particles->at(0).getPos();
 		//cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
+		//parachute->update(dt);
 		cloth->update(dt);
 		//ropes->update(dt);
 	}
@@ -152,6 +166,7 @@ void Window::display_callback(GLFWwindow* window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//cout << V[3][0] << " " << V[3][1] << " " << V[3][2] << endl;
+	//parachute->draw(shaderProgram, P, V);
 	cloth->draw(shaderProgram, P, V);
 	//ropes->draw(shaderProgram, P, V);
 	ground->draw(shaderProgram, P, V);
@@ -190,6 +205,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_D)
 		{
 			isDrop = true;
+			//parachute->drop();
 			cloth->drop();
 			//ropes->drop();
 		}
