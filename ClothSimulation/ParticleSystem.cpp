@@ -6,7 +6,7 @@ ParticleSystem::ParticleSystem()
 {
 }
 
-void ParticleSystem::setParams(float m, float len, vector<float> springC, float drag, float den, int step_)
+void ParticleSystem::setParams(float m, float len, vector<float> springC, float drag, float den, int stepw, int steph)
 {
 	k_s1 = springC[0];
 	k_d1 = springC[1];
@@ -21,74 +21,62 @@ void ParticleSystem::setParams(float m, float len, vector<float> springC, float 
 	length = len;
 	c_d = drag;
 	rho = den;
-	step = step_;
+	dw = stepw;
+	dh = steph;
 }
 
-void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
+void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 {
-	numParticles = gridSize * gridSize;
+	numParticles = width * height;
+	w = width;
+	h = height;
 
 	// Create particles
 	particles = new vector<Particle>();
-	vector<Particle*> temp;
-	vector<int> ids;
 
 	int count = 0;
-	int tcounter = 0;
-	for (int i = 0; i < gridSize; i++)
+	for (int i = 0; i < height; i++)
 	{
-		for (int j = 0; j < gridSize; j++)
+		for (int j = 0; j < width; j++)
 		{
 			Particle x = Particle();
-			x.setParams(mass, glm::vec3(float(j) * length, 0, float(i) * length) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+			x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 			x.id = count;
 
 			// Fix the top row initially
-			if (i == gridSize - 1)
+			if (i == height - 1)
 			{
 				x.isFixed = true;
 			}
 			count++;
 			particles->push_back(x);
-
-			if (((i == 0) || (i == gridSize - 1)) && ((j == 0) || (j == gridSize - 1)))
-			{
-				//cout << i << " " << j << endl;
-				temp.push_back(&(particles->at(particles->size() - 1)));
-				glm::vec3 pos = temp[tcounter]->getPos();
-				//cout << particles->size() - 1 << ":" << pos.x << " " << pos.y << " " << pos.z << endl;
-				tcounter++;
-				ids.push_back(x.id);
-			}
 		}
 	}
-
-	//cout << temp.size() << endl;
 
 	// Create spring-dampers
 	springs = new vector<SpringDamper>();
 	triangles = new vector<Triangle>();
 
-	for (int i = 0; i < gridSize; i++)
+	for (int i = 0; i < height; i++)
 	{
-		for (int j = 0; j < gridSize; j++)
+		for (int j = 0; j < width; j++)
 		{
 			int p[4] = {-1, -1, -1, -1};
-			p[0] = gridSize * i + j;
+			p[0] = width * i + j;
 
 			int counter = 0;
-			if (j < gridSize - 1)
+			if (j < width - 1)
 			{
-				p[1] = gridSize * i + (j + 1);
+				p[1] = width * i + (j + 1);
 				counter++;
 			}
-			if (i < gridSize - 1)
+			if (i < height - 1)
 			{
-				p[3] = gridSize * (i + 1) + j;
+				p[3] = width * (i + 1) + j;
 				counter++;
 			}
 			if (counter == 2)
-				p[2] = gridSize * (i + 1) + (j + 1);
+				p[2] = width * (i + 1) + (j + 1);
 
 			counter = 0;
 			if (p[1] > 0)
@@ -102,7 +90,7 @@ void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 			if (p[3] > 0)
 			{
 				SpringDamper s(&(particles->at(p[0])), &(particles->at(p[3])));
-				s.setParams(k_s1, k_d1);
+				s.setParams(k_s1 * float(dh)/float(dw), k_d1* float(dh) / float(dw));
 				springs->push_back(s);
 				counter++;
 			}
@@ -133,26 +121,28 @@ void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 	// Create secondary spring-dampers
 	springs2 = new vector<SpringDamper>();
 
-	for (int i = 0; i < gridSize; i++)
+	if (dw <= 0 || dh <= 0)
+		return;
+	for (int i = 0; i < height; i++)
 	{
-		for (int j = 0; j < gridSize; j++)
+		for (int j = 0; j < width; j++)
 		{
 			int p[4] = { -1, -1, -1, -1 };
-			p[0] = gridSize * i + j;
+			p[0] = width * i + j;
 
 			int counter = 0;
-			if (j < gridSize - step)
+			if (j < width - dw)
 			{
-				p[1] = gridSize * i + (j + step);
+				p[1] = width * i + (j + dw);
 				counter++;
 			}
-			if (i < gridSize - step)
+			if (i < height - dh)
 			{
-				p[3] = gridSize * (i + step) + j;
+				p[3] = width * (i + dh) + j;
 				counter++;
 			}
 			if (counter == 2)
-				p[2] = gridSize * (i + step) + (j + step);
+				p[2] = width * (i + dh) + (j + dw);
 
 			counter = 0;
 			if (p[1] > 0)
@@ -187,54 +177,12 @@ void ParticleSystem::createMesh(int gridSize, glm::vec3 offset)
 		}
 	}
 
-	//cout << springs->size() << endl;
-	vector<int> temp2;
-	// Create ropes
-	for (int i = 0; i < ids.size(); i++)
-	{
-		//cout << ids[i] << endl;
-		glm::vec3 pos = particles->at(ids[i]).getPos();
-		//cout << pos.x << " " << pos.y << " " << pos.z << endl;
-		Particle* prev = &(particles->at(ids[i]));
-
-		for (int k = 1; k < 10; k++)
-		{
-			Particle x = Particle();
-			x.setParams(0.01, glm::vec3(pos.x, pos.y - k * 0.1f, pos.z ), glm::vec3(0.0f), glm::vec3(0.0f));
-			particles->push_back(x);
-			numParticles++;
-
-			SpringDamper s(prev, &(particles->at(particles->size() - 1)));
-			s.setParams(100.0f, 0.01f);
-			springs->push_back(s);
-
-			prev = &(particles->back());
-		}
-		temp2.push_back(particles->size() - 1);
-	}
-
-	cout << temp2.size() << endl;
-	// Create box
-	Particle box = Particle();
-	box.setParams(100.0f, glm::vec3(0.0f, 8.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
-	numParticles++;
-	particles->push_back(box);
-
-	for (int i = 0; i < temp2.size(); i++)
-	{
-		//cout << temp2[i] << endl;
-		SpringDamper s_(&(particles->at(temp2[i])), &(particles->at(particles->size() - 1)));
-		s_.setParams(100.0f, 0.01f);
-		springs->push_back(s_);
-	}
-
-	//cout << springs->size() << endl;
 }
 
 void ParticleSystem::drop()
 {
 	int num = sqrt(numParticles);
-	for (int i = num * (num - 1); i < numParticles; i++)
+	for (int i = w * (h - 1); i < numParticles; i++)
 		particles->at(i).isFixed = false;
 }
 
@@ -268,12 +216,12 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 {
 	glUseProgram(program);
 
-	spositions.clear();
-	for (auto spring : *springs)
-	{
-		spositions.push_back(spring.P1->getPos()); 
-		spositions.push_back(spring.P2->getPos());
-	}
+	//spositions.clear();
+	//for (auto spring : *springs)
+	//{
+	//	spositions.push_back(spring.P1->getPos()); 
+	//	spositions.push_back(spring.P2->getPos());
+	//}
 
 	tpositions.clear();
 	tnormals.clear();
@@ -306,8 +254,8 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	glDrawArrays(GL_LINES, 0, spositions.size());
-	//glDrawArrays(GL_TRIANGLES, 0, tpositions.size());
+	//glDrawArrays(GL_LINES, 0, spositions.size());
+	glDrawArrays(GL_TRIANGLES, 0, tpositions.size());
 	glBindVertexArray(0);
 }
 
@@ -324,17 +272,17 @@ void ParticleSystem::drawInit()
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * spositions.size(), spositions.data(), GL_STATIC_DRAW);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * tpositions.size(), tpositions.data(), GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * spositions.size(), spositions.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * tpositions.size(), tpositions.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * tnormals.size(), tnormals.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * tnormals.size(), tnormals.data(), GL_STATIC_DRAW);
 
-	//glEnableVertexAttribArray(1);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);

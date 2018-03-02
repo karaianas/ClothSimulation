@@ -44,4 +44,4 @@ void Particle::update(float dt)
 	//cout << id << ": " << position.x << " " << position.y << " " << position.z << endl;
 	//cout << id << ": " << accel.x << " " << accel.y << " " << accel.z << endl;
 	//cout << id << ": " << velocity.x << " " << velocity.y << " " << velocity.z << endl;
-}
+} 

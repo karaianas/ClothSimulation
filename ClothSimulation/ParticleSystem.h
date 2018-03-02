@@ -10,8 +10,9 @@ class ParticleSystem {
 public:
 	ParticleSystem();
 
-	void setParams(float m, float len, vector<float> springC, float drag, float den, int step_);
-	void createMesh(int gridSize, glm::vec3 offset);
+	void setParams(float m, float len, vector<float> springC, float drag, float den, int stepw, int steph);
+	void createMesh(int width, int height, glm::vec3 offset);
+	void createRope(int ropeSize, glm::vec3 offset);
 
 	void drop();
 	void update(float dt);
@@ -41,4 +42,6 @@ private:
 	float mass, length;
 	float c_d, rho;
 	int step;
+	int dw, dh;
+	int w, h;
 };

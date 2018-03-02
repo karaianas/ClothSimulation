@@ -8,7 +8,7 @@ GLint shaderProgram;
 #define FRAGMENT_SHADER_PATH ".//Shaders//shader.frag"
 
 // Default camera parameters
-glm::vec3 cam_pos(0.0f, 0.0f, 7.0f);		// e  | Position of camera
+glm::vec3 cam_pos(0.0f, 0.0f, 5.0f);		// e  | Position of camera
 glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
@@ -26,7 +26,8 @@ glm::vec2 prev_pos;
 bool rotate_flag_L = false;
 bool rotate_flag_R = false;
 
-ParticleSystem* ps;
+ParticleSystem* cloth;
+ParticleSystem* ropes;
 Plane* ground;
 
 void Window::initialize_objects()
@@ -43,15 +44,28 @@ void Window::initialize_objects()
 	springConstants.push_back(0.001f);
 
 	float mass = 0.0001;
-	float length = 0.1f;//0.01f
-	float c_d = 1.0f;
+	float length = 0.01f;//0.01f
+	float c_d = 1.0f;//1.0f
 	float rho = 1.23f;
 	int step = 5;
 	int size = 50;
-	ps = new ParticleSystem();
-	ps->setParams(mass, length, springConstants, c_d, rho, step);
-	ps->createMesh(size, glm::vec3(-float(size)/200.0f * 1.0f/length, 10.0f, -float(size) / 200.0f * 1.0f / length));
-	//ps->createMesh(size, glm::vec3(0.0f, 10.0f, 0.0f));
+	cloth = new ParticleSystem();
+	cloth->setParams(mass, length, springConstants, c_d, rho, 5, 5);
+	//cloth->createMesh(size, glm::vec3(-float(size)/200.0f * 1.0f/length, 10.0f, -float(size) / 200.0f * 1.0f / length));
+	cloth->createMesh(size, size * 2, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	vector<float> springConstants2;
+	springConstants2.push_back(300.0f);
+	springConstants2.push_back(0.01f);
+	springConstants2.push_back(300.2f);
+	springConstants2.push_back(0.01f);
+	springConstants2.push_back(20.0f);// 2.0f
+	springConstants2.push_back(0.001f);
+	springConstants2.push_back(100.0f);// 2.0f
+	springConstants2.push_back(0.001f);
+	ropes = new ParticleSystem();
+	ropes->setParams(0.001f, 0.01f, springConstants2, c_d, rho, 2, 3);
+	ropes->createMesh(2, 50, glm::vec3(0.0f, 0.5f, 0.0f));
 
 	ground = new Plane(-0.001f);
 }
@@ -130,11 +144,12 @@ void Window::idle_callback()
 {
 	if (isTest)
 	{
-		float dt = 0.001f;
+		float dt = 0.001f;// 0.001f
 		totalTime += dt;
-		//glm::vec3 position = ps.particles->at(0).getPos();
+		//glm::vec3 position = cloth.particles->at(0).getPos();
 		//cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
-		ps->update(dt);
+		//cloth->update(dt);
+		ropes->update(dt);
 	}
 }
 
@@ -148,7 +163,8 @@ void Window::display_callback(GLFWwindow* window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//cout << V[3][0] << " " << V[3][1] << " " << V[3][2] << endl;
-	ps->draw(shaderProgram, P, V);
+	//cloth->draw(shaderProgram, P, V);
+	ropes->draw(shaderProgram, P, V);
 	ground->draw(shaderProgram, P, V);
 
 	glfwPollEvents();
@@ -185,7 +201,8 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_D)
 		{
 			isDrop = true;
-			ps->drop();
+			cloth->drop();
+			ropes->drop();
 		}
 
 	}
