@@ -8,8 +8,12 @@ GLint shaderProgram;
 #define FRAGMENT_SHADER_PATH ".//Shaders//shader.frag"
 
 // Default camera parameters
-glm::vec3 cam_pos(0.0f, 0.0f, 5.0f);		// e  | Position of camera
-glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
+float theta = 0.0f;
+float radius = 5.0f;
+float cylheight = 1.0f;
+
+glm::vec3 cam_pos(radius * sin(theta), cylheight, radius * cos(theta));		// e  | Position of camera
+glm::vec3 cam_look_at(0.0f, cylheight, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
 int Window::width;
@@ -30,6 +34,7 @@ ParticleSystem* parachute;
 ParticleSystem* cloth;
 ParticleSystem* ropes;
 Plane* ground;
+Point* cp;
 
 void Window::initialize_objects()
 {
@@ -70,6 +75,9 @@ void Window::initialize_objects()
 	cloth->createMesh(size, size * 2, glm::vec3(-float(size * length) / 2.0f, 0.5f, 0.0f));
 
 	ground = new Plane(-0.001f);
+
+	// Cursor control
+	cp = new Point();
 }
 
 void Window::clean_up()
@@ -170,6 +178,7 @@ void Window::display_callback(GLFWwindow* window)
 	cloth->draw(shaderProgram, P, V);
 	//ropes->draw(shaderProgram, P, V);
 	ground->draw(shaderProgram, P, V);
+	cp->draw(shaderProgram, P, V);
 
 	glfwPollEvents();
 	glfwSwapBuffers(window);
@@ -177,11 +186,46 @@ void Window::display_callback(GLFWwindow* window)
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+
 	if (action == GLFW_PRESS)
 	{
 		if (key == GLFW_KEY_ESCAPE)
 		{
 			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
+
+		if (key == GLFW_KEY_A)
+		{
+			theta -= 0.1f;
+			cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
+			cam_look_at[1] = cylheight;
+			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		}
+
+		if (key == GLFW_KEY_D)
+		{
+			theta += 0.1f;
+			cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
+			cam_look_at[1] = cylheight;
+			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		}
+
+		if (key == GLFW_KEY_W)
+		{
+			cylheight += 0.2f;
+			//cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
+			cam_pos[1] = cylheight;
+			cam_look_at[1] = cylheight;
+			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		}
+
+		if (key == GLFW_KEY_S)
+		{
+			cylheight -= 0.2f;
+			//cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
+			cam_pos[1] = cylheight;
+			cam_look_at[1] = cylheight;
+			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
 		}
 
 		// Play/pause
@@ -194,7 +238,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		}
 
 		// Wireframe mode
-		if (key == GLFW_KEY_W)
+		if (key == GLFW_KEY_1)
 		{
 			if (wireframe)
 				wireframe = false;
@@ -202,7 +246,8 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				wireframe = true;
 		}
 
-		if (key == GLFW_KEY_D)
+		// Drop
+		if (key == GLFW_KEY_2)
 		{
 			isDrop = true;
 			//parachute->drop();
@@ -224,7 +269,7 @@ void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods
 			double xpos;
 			double ypos;
 			glfwGetCursorPos(window, &xpos, &ypos);
-			
+			prev_pos = glm::vec2(xpos, ypos);
 			rotate_flag_L = true;
 		}
 		else if (action == GLFW_RELEASE)
@@ -238,7 +283,7 @@ void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods
 		double xpos;
 		double ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		prev_pos = glm::vec2(xpos, ypos);
+		//prev_pos = glm::vec2(xpos, ypos);
 		rotate_flag_R = true;
 	}
 	else
@@ -254,25 +299,44 @@ glm::vec3 Window::trackball(glm::vec2 point)
 	mapped.y = (height - 2.0f * point.y) / height;
 	mapped.z = 0.0f;
 
-	d = glm::length(mapped);
-	d = (d < 1.0f) ? d : 1.0f;
-	mapped.z = sqrtf(1.001f - d * d);
-	mapped = glm::normalize(mapped);
+	//d = glm::length(mapped);
+	//d = (d < 1.0f) ? d : 1.0f;
+	//mapped.z = sqrtf(1.001f - d * d);
+	//mapped = glm::normalize(mapped);
 
 	return mapped;
 }
 
 void Window::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {
+	if (rotate_flag_L)
+	{
+		float wx = (2.0f * xpos - width) / width;
+		float wy = (height - 2.0f * ypos) / height;
+		glm::vec4 wp(wx, wy, 0.0f, 1.0f);
+
+		glm::mat4 PV = P * V;
+		glm::vec4 wp_ = glm::inverse(PV) * wp;
+
+		wp_.w = 1.0 / wp_.w;
+
+		wp_.x *= wp_.w;
+		wp_.y *= wp_.w;
+		wp_.z *= wp_.w;
+
+		cp->setPos(wp_);
+	}
+	/*
 	if (rotate_flag_R)
 	{
 		// Calculate angle, axis, and rotation mtx
 		glm::vec3 prev_pos_ball = trackball(prev_pos);
 		glm::vec3 curr_pos_ball = trackball(glm::vec2(xpos, ypos));
 
-		//glm::vec3 dir = curr_pos_ball - prev_pos_ball;
 		float angle = glm::degrees(glm::acos(std::min(1.0f, glm::dot(curr_pos_ball, prev_pos_ball))));
 		glm::vec3 axis = glm::normalize(glm::cross(prev_pos_ball, curr_pos_ball));
+		
+		glm::vec3 yaxis = glm::vec3(0.0f, 1.0f, 0.0f);
 		glm::mat4 R = glm::rotate(glm::mat4(1.0f), angle * 0.01f, axis);
 
 		// Model rotation
@@ -285,11 +349,14 @@ void Window::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 
 		prev_pos = glm::vec2(xpos, ypos);
 	}
+	*/
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	float scalefactor = (yoffset > 0) ? 1.1f : 1 / 1.1f;
-	cam_pos = glm::vec3(glm::scale(glm::mat4(1.0f), glm::vec3(scalefactor)) * glm::vec4(cam_pos, 1.0f));
+	//cam_pos = glm::vec3(glm::scale(glm::mat4(1.0f), glm::vec3(scalefactor)) * glm::vec4(cam_pos, 1.0f));
+	radius *= scalefactor;
+	cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
 	V = glm::lookAt(cam_pos, cam_look_at, cam_up);
 }

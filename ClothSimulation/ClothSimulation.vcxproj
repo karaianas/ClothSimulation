@@ -129,6 +129,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpringDamper.h" />
     <ClInclude Include="testZone.h" />
@@ -140,6 +141,7 @@
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="Point.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SpringDamper.cpp" />
     <ClCompile Include="Triangle.cpp" />

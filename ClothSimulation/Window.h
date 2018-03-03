@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "ParticleSystem.h"
 #include "Plane.h"
+#include "Point.h"
 
 class Window
 {
