@@ -573,16 +573,8 @@ void ParticleSystem::createBox()
 
 void ParticleSystem::drop()
 {
-	//for (int i = w * (h - 1); i < numParticles; i++)
-	//	particles->at(i).isFixed = false;
-	//for (auto p : *particles)
-	//{
-	//	p.isFixed = false;
-	//}
 	for (int i = 0; i < particles->size(); i++)
-	{
 		particles->at(i).isFixed = false;
-	}
 }
 
 void ParticleSystem::update(float dt)
@@ -596,15 +588,15 @@ void ParticleSystem::update(float dt)
 	}
 
 	// (2) Compute elastic force
-	for (auto spring : *springs)
-		spring.computeForce();
+	for (int i = 0; i < springs->size(); i++)
+		springs->at(i).computeForce();
 
-	for (auto spring : *springs2)
-		spring.computeForce();
+	for (int i = 0; i < springs2->size(); i++)
+		springs2->at(i).computeForce();
 
 	// (3) Compute aerodynamic force
-	for (auto t : *triangles)
-		t.computeForce(-wind * 5.0f);//5
+	for (int i = 0; i < triangles->size(); i++)
+		triangles->at(i).computeForce(-wind * 5.0f);//5
 
 	// (4) Integrate
 	for (int i = 0; i < particles->size(); i++)
@@ -618,9 +610,11 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	tpositions.clear();
 	tnormals.clear();
-	//shadows.clear();
-	for (auto t : *triangles)
+	shadows.clear();
+
+	for (int i = 0; i < triangles->size(); i++)
 	{
+		Triangle & t = triangles->at(i);
 		glm::vec3 p1 = t.P1->getPos();
 		glm::vec3 p2 = t.P2->getPos();
 		glm::vec3 p3 = t.P3->getPos();
@@ -629,7 +623,7 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		tpositions.push_back(p2);
 		tpositions.push_back(p3);
 
-		t.computeNormal();
+		//t.computeNormal();
 		t.P1->addNormal(t.N);
 		t.P2->addNormal(t.N);
 		t.P3->addNormal(t.N);
@@ -639,15 +633,16 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		//tnormals.push_back(t.N);
 
 		// Create pseudo shadows
-		//p1.y = 0.0f; p2.y = 0.0f; p3.y = 0.0f;
-		//shadows.push_back(p1);
-		//shadows.push_back(p2);
-		//shadows.push_back(p3);
+		p1.y = 0.0f; p2.y = 0.0f; p3.y = 0.0f;
+		shadows.push_back(p1);
+		shadows.push_back(p2);
+		shadows.push_back(p3);
 	}
 
 	// Smooth normal
-	for (auto t : *triangles)
+	for (int i = 0; i < triangles->size(); i++)
 	{
+		Triangle & t = triangles->at(i);
 		t.P1->computeNormal();
 		t.P2->computeNormal();
 		t.P3->computeNormal();
@@ -656,7 +651,7 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		tnormals.push_back(t.P2->getNorm());
 		tnormals.push_back(t.P3->getNorm());
 	}
-
+	
 	drawInit();
 
 	glm::mat4 worldM = glm::mat4(1.0f);
@@ -679,24 +674,26 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 	glDrawArrays(GL_TRIANGLES, 0, tpositions.size());
 	glBindVertexArray(0);
 
-	//glBindVertexArray(VAO2);
-	//glDrawArrays(GL_TRIANGLES, 0, shadows.size());
-	//glBindVertexArray(0);
+	glBindVertexArray(VAO2);
+	glUniform3f(uColor, 0.4f, 0.4f, 0.4f);
+	glLineWidth(1.0f);
+	glDrawArrays(GL_TRIANGLES, 0, shadows.size());
+	glBindVertexArray(0);
 }
 
 void ParticleSystem::drawInit()
 {
 	glDeleteVertexArrays(1, &VAO);
-	//glDeleteVertexArrays(1, &VAO2);
+	glDeleteVertexArrays(1, &VAO2);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &VBO2);
-	//glDeleteBuffers(1, &VBO3);
+	glDeleteBuffers(1, &VBO3);
 
 	glGenVertexArrays(1, &VAO);
-	//glGenVertexArrays(1, &VAO2);
+	glGenVertexArrays(1, &VAO2);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &VBO2);
-	//glGenBuffers(1, &VBO3);
+	glGenBuffers(1, &VBO3);
 
 	glBindVertexArray(VAO);
 
@@ -716,16 +713,16 @@ void ParticleSystem::drawInit()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	//glBindVertexArray(VAO2);
+	glBindVertexArray(VAO2);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO3);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * shadows.size(), shadows.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO3);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * shadows.size(), shadows.data(), GL_STATIC_DRAW);
 
-	//glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void ParticleSystem::translate(glm::mat4 T)

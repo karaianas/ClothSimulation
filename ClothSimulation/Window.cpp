@@ -156,7 +156,7 @@ void Window::idle_callback()
 	{
 		float dt = 0.001f;// 0.001f
 		totalTime += dt;
-		//parachute->update(dt);
+		parachute->update(dt);
 		cloth->update(dt);
 		//ropes->update(dt);
 	}
@@ -171,7 +171,7 @@ void Window::display_callback(GLFWwindow* window)
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	//parachute->draw(shaderProgram, P, V);
+	parachute->draw(shaderProgram, P, V);
 	cloth->draw(shaderProgram, P, V);
 	//ropes->draw(shaderProgram, P, V);
 	ground->draw(shaderProgram, P, V);
@@ -247,7 +247,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_2)
 		{
 			isDrop = true;
-			//parachute->drop();
+			parachute->drop();
 			cloth->drop();
 			//ropes->drop();
 		}

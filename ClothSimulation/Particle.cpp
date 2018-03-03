@@ -41,10 +41,6 @@ void Particle::update(float dt)
 
 	// (3) zero out the force
 	force = glm::vec3(0.0f);
-
-	//cout << id << ": " << position.x << " " << position.y << " " << position.z << endl;
-	//cout << id << ": " << accel.x << " " << accel.y << " " << accel.z << endl;
-	//cout << id << ": " << velocity.x << " " << velocity.y << " " << velocity.z << endl;
 }
 
 void Particle::addNormal(glm::vec3 &N)

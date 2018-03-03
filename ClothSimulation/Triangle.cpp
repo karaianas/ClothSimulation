@@ -22,7 +22,7 @@ void Triangle::computeForce(glm::vec3 &v_a)
 	glm::vec3 v_s = (P1->getVel() + P2->getVel() + P3->getVel()) / 3.0f;
 	glm::vec3 v = v_s - v_a;
 
-	//computeNormal();
+	computeNormal();
 
 	float a_0 = 0.5f * glm::length(glm::cross(P2->getPos() - P1->getPos(), P3->getPos() - P1->getPos()));
 	float a; 
@@ -33,13 +33,9 @@ void Triangle::computeForce(glm::vec3 &v_a)
 
 	glm::vec3 f = -0.5f * rho * glm::length(v) * glm::length(v) * c_d * a * N / 3.0f;
 	
-	//cout << a << endl;
-	//cout << v.x << " " << v.y << " " << v.z << endl;
-	//cout << f.x << " " << f.y << " " << f.z << endl;
 	P1->applyForce(f);
 	P2->applyForce(f);
 	P3->applyForce(f);
-
 }
 
 void Triangle::computeNormal()
