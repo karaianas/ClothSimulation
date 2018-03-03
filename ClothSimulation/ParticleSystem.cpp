@@ -128,10 +128,7 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 	springs2 = new vector<SpringDamper>();
 	int wth = 0;
 	if (dw <= 0 || dh <= 0)
-	{
-		//cout << "???" << endl;
 		return;
-	}
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width; j++)
@@ -139,16 +136,11 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 			int p[4] = { -1, -1, -1, -1 };
 			p[0] = width * i + j;
 
-			//std::cout << "j = " << j << " i = " << i << endl;
-			//std::cout << "width - dw = " << width - dw << " height - dh = " << height - dh << endl;
-
 			if ((j <= width - dw) && (i <= height - dh))
 			{
 				p[1] = width * i + (j + dw - 1);
 				p[2] = width * (i + dh - 1) + (j + dw - 1);
 				p[3] = width * (i + dh - 1) + j;
-
-				//std::cout << p[0] << " " << p[1] << " " << p[2] << " " << p[3] << endl;
 
 				// Top
 				SpringDamper s0(&(particles->at(p[3])), &(particles->at(p[2])));
@@ -471,7 +463,6 @@ void ParticleSystem::attachBox()
 
 void ParticleSystem::createBox()
 {
-	//glm::vec3 offset(0.0f, 2.0f, 0.0f);
 	glm::vec3 avg(0.0f);
 	for (int i = 0; i < attach2.size(); i ++)
 	{
@@ -526,7 +517,6 @@ void ParticleSystem::createBox()
 			scounter++;
 		}
 	}
-	//cout << "springs: " << scounter << endl;
 
 	// Create triangles
 	// Near
@@ -597,7 +587,6 @@ void ParticleSystem::drop()
 
 void ParticleSystem::update(float dt)
 {
-
 	// (1) Compute gravitational force
 	glm::vec3 g(0, -9.8, 0);
 	for (int i = 0; i < particles->size(); i++)
@@ -671,7 +660,7 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 	drawInit();
 
 	glm::mat4 worldM = glm::mat4(1.0f);
-	glm::mat4 MVP = P * V * worldM;
+	glm::mat4 MVP = P * V *worldM;
 
 	uMVP = glGetUniformLocation(program, "MVP");
 	uModel = glGetUniformLocation(program, "model");
@@ -719,10 +708,11 @@ void ParticleSystem::drawInit()
 	glBindVertexArray(0);
 }
 
-void ParticleSystem::printSprings()
+void ParticleSystem::translate(glm::mat4 T)
 {
-	for (auto spring : *springs)
+	for (int i = 0; i < particles->size(); i++)
 	{
-		spring.printIDs();
+		particles->at(i).setPos(glm::vec3(T * glm::vec4(particles->at(i).getPos(), 1.0f)));
 	}
 }
+

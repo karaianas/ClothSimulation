@@ -11,6 +11,7 @@ Point::Point()
 void Point::setPos(glm::vec3 curr)
 {
 	worldM[3] = glm::vec4(curr, 1.0f);
+	//cout << curr.x << " " << curr.y << " " << curr.z << endl;
 }
 
 void Point::update(glm::vec3 delta)

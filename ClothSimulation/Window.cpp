@@ -1,34 +1,31 @@
 #include "Window.h"
 
-const char* window_title = "parachute Simulator";
-GLint shaderProgram;
+const char* window_title = "Cloth Simulator";
+int Window::width;
+int Window::height;
 
-// On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH ".//Shaders//shader.vert"
 #define FRAGMENT_SHADER_PATH ".//Shaders//shader.frag"
+GLint shaderProgram;
 
-// Default camera parameters
 float theta = 0.0f;
 float radius = 5.0f;
 float cylheight = 1.0f;
 
-glm::vec3 cam_pos(radius * sin(theta), cylheight, radius * cos(theta));		// e  | Position of camera
-glm::vec3 cam_look_at(0.0f, cylheight, 0.0f);	// d  | This is where the camera looks at
-glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
-
-int Window::width;
-int Window::height;
-
+glm::vec3 cam_pos(radius * sin(theta), cylheight, radius * cos(theta));	
+glm::vec3 cam_look_at(0.0f, cylheight, 0.0f);	
+glm::vec3 cam_up(0.0f, 1.0f, 0.0f);
 glm::mat4 Window::P;
 glm::mat4 Window::V;
 
 bool wireframe = false;
 bool isTest = false;
 bool isDrop = false;
+bool isLeft = false;
+bool isRight = false;
+
 float totalTime = 0.0f;
-glm::vec2 prev_pos; 
-bool rotate_flag_L = false;
-bool rotate_flag_R = false;
+glm::vec2 prev_pos;
 
 ParticleSystem* parachute;
 ParticleSystem* cloth;
@@ -156,8 +153,6 @@ void Window::idle_callback()
 	{
 		float dt = 0.001f;// 0.001f
 		totalTime += dt;
-		//glm::vec3 position = parachute.particles->at(0).getPos();
-		//cout << totalTime << ": " << position.x << ", " << position.y << ", " << position.z << endl;
 		//parachute->update(dt);
 		cloth->update(dt);
 		//ropes->update(dt);
@@ -173,7 +168,6 @@ void Window::display_callback(GLFWwindow* window)
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	//cout << V[3][0] << " " << V[3][1] << " " << V[3][2] << endl;
 	//parachute->draw(shaderProgram, P, V);
 	cloth->draw(shaderProgram, P, V);
 	//ropes->draw(shaderProgram, P, V);
@@ -270,11 +264,11 @@ void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods
 			double ypos;
 			glfwGetCursorPos(window, &xpos, &ypos);
 			prev_pos = glm::vec2(xpos, ypos);
-			rotate_flag_L = true;
+			isLeft = true;
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			rotate_flag_L = false;
+			isLeft = false;
 		}
 	}
 
@@ -284,10 +278,10 @@ void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods
 		double ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 		//prev_pos = glm::vec2(xpos, ypos);
-		rotate_flag_R = true;
+		isRight = true;
 	}
 	else
-		rotate_flag_R = false;
+		isRight = false;
 
 }
 
@@ -309,25 +303,28 @@ glm::vec3 Window::trackball(glm::vec2 point)
 
 void Window::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (rotate_flag_L)
+	if (isLeft)
 	{
+		isTest = false;
+
 		float wx = (2.0f * xpos - width) / width;
 		float wy = (height - 2.0f * ypos) / height;
-		glm::vec4 wp(wx, wy, 0.0f, 1.0f);
 
+		float wx_ = (2.0f * prev_pos.x - width) / width;
+		float wy_ = (height - 2.0f * prev_pos.y) / height;
+
+		glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(wx - wx_, wy - wy_, 0.0f));
 		glm::mat4 PV = P * V;
-		glm::vec4 wp_ = glm::inverse(PV) * wp;
 
-		wp_.w = 1.0 / wp_.w;
+		//glm::vec3 p = cp->getPos();
+		//glm::vec3 p_ = glm::inverse(PV) * T * P * V * glm::vec4(p, 1.0f);
+		//cp->setPos(p_);
+		cloth->translate(glm::inverse(PV) * T * P * V);
 
-		wp_.x *= wp_.w;
-		wp_.y *= wp_.w;
-		wp_.z *= wp_.w;
-
-		cp->setPos(wp_);
+		prev_pos = glm::vec2(xpos, ypos);
 	}
 	/*
-	if (rotate_flag_R)
+	if (isRight)
 	{
 		// Calculate angle, axis, and rotation mtx
 		glm::vec3 prev_pos_ball = trackball(prev_pos);

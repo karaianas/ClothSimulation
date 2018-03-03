@@ -8,6 +8,7 @@ public:
 	void setParams(float m, glm::vec3 p, glm::vec3 v, glm::vec3 f);
 	void update(float dt);
 	void draw();
+
 	void applyForce(glm::vec3 &f) { force += f; };
 	void addNormal(glm::vec3 &N);
 	void computeNormal();
@@ -16,6 +17,8 @@ public:
 	glm::vec3 getPos() { return position; };
 	glm::vec3 getVel() { return velocity; };
 	glm::vec3 getNorm() { return normal; };
+
+	void setPos(glm::vec3 pos) { position = pos; };
 
 private:
 	float mass;

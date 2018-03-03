@@ -12,6 +12,7 @@ public:
 
 	void setParams(float m, float len, vector<float> springC, float drag, float den, int stepw, int steph);
 	void createMesh(int width, int height, glm::vec3 offset);
+	
 	void attachRope();
 	void createRope(glm::vec2 indices);
 
@@ -23,8 +24,7 @@ public:
 	void draw(GLuint program, glm::mat4 P, glm::mat4 V);
 	void drawInit();
 
-	// Checking functions
-	void printSprings();
+	void translate(glm::mat4 T);
 
 // Switch to private variables after debugging
 public:
@@ -46,6 +46,8 @@ private:
 	vector<int> attach;
 	vector<int> attach2;
 	vector<int> attach3;
+
+	glm::vec3 wind;
 
 	// Coefficients
 	float k_s1, k_d1, k_s2, k_d2, k_s3, k_d3, k_s4, k_d4;
