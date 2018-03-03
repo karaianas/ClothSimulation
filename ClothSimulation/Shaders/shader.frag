@@ -12,6 +12,7 @@ void directional();
 
 void main()
 {
+	//color = vec4(C, 0.0f);
 	directional();
 	//color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	//color = vec4(N, 1.0f);

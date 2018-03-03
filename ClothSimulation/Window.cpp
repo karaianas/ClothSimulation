@@ -26,6 +26,7 @@ bool isRight = false;
 
 float totalTime = 0.0f;
 glm::vec2 prev_pos;
+glm::vec2 prev_pos2;
 
 ParticleSystem* parachute;
 ParticleSystem* cloth;
@@ -74,7 +75,9 @@ void Window::initialize_objects()
 	ground = new Plane(-0.001f);
 
 	// Cursor control
-	cp = new Point();
+	glm::vec3 windPos = glm::vec3(0.0f, 0.0f, 1.0f);
+	cp = new Point(windPos);
+	cloth->updateWind(windPos);
 }
 
 void Window::clean_up()
@@ -255,7 +258,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods)
 {
 
-	// Rotate 
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		if (action == GLFW_PRESS)
@@ -269,6 +271,7 @@ void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods
 		else if (action == GLFW_RELEASE)
 		{
 			isLeft = false;
+			isTest = true;
 		}
 	}
 
@@ -277,7 +280,7 @@ void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods
 		double xpos;
 		double ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		//prev_pos = glm::vec2(xpos, ypos);
+		prev_pos2 = glm::vec2(xpos, ypos);
 		isRight = true;
 	}
 	else
@@ -293,10 +296,10 @@ glm::vec3 Window::trackball(glm::vec2 point)
 	mapped.y = (height - 2.0f * point.y) / height;
 	mapped.z = 0.0f;
 
-	//d = glm::length(mapped);
-	//d = (d < 1.0f) ? d : 1.0f;
-	//mapped.z = sqrtf(1.001f - d * d);
-	//mapped = glm::normalize(mapped);
+	d = glm::length(mapped);
+	d = (d < 1.0f) ? d : 1.0f;
+	mapped.z = sqrtf(1.001f - d * d);
+	mapped = glm::normalize(mapped);
 
 	return mapped;
 }
@@ -316,44 +319,53 @@ void Window::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 		glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(wx - wx_, wy - wy_, 0.0f));
 		glm::mat4 PV = P * V;
 
-		//glm::vec3 p = cp->getPos();
-		//glm::vec3 p_ = glm::inverse(PV) * T * P * V * glm::vec4(p, 1.0f);
-		//cp->setPos(p_);
 		cloth->translate(glm::inverse(PV) * T * P * V);
 
 		prev_pos = glm::vec2(xpos, ypos);
 	}
-	/*
 	if (isRight)
 	{
 		// Calculate angle, axis, and rotation mtx
-		glm::vec3 prev_pos_ball = trackball(prev_pos);
+		glm::vec3 prev_pos_ball = trackball(prev_pos2);
 		glm::vec3 curr_pos_ball = trackball(glm::vec2(xpos, ypos));
 
 		float angle = glm::degrees(glm::acos(std::min(1.0f, glm::dot(curr_pos_ball, prev_pos_ball))));
 		glm::vec3 axis = glm::normalize(glm::cross(prev_pos_ball, curr_pos_ball));
-		
-		glm::vec3 yaxis = glm::vec3(0.0f, 1.0f, 0.0f);
 		glm::mat4 R = glm::rotate(glm::mat4(1.0f), angle * 0.01f, axis);
+
+		// Point rotation
+		glm::mat4 PV = P * V;
+		glm::vec4 p = glm::vec4(cp->getPos(), 1.0f);
+		//cp->setPos(glm::vec3(glm::inverse(PV) * R * P * V * p));
+		cp->setPos(R * p);
+		cloth->updateWind(cp->getPos());
 
 		// Model rotation
 		//M->rotate(R);
 
 		// Camera rotation
-		cam_pos = glm::vec3(glm::rotate(glm::mat4(1.0f), -angle * 0.01f, axis) * glm::vec4(cam_pos, 1.0f));
-		cam_up = glm::vec3(glm::rotate(glm::mat4(1.0f), -angle * 0.01f, axis) * glm::vec4(cam_up, 1.0f));
-		V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		//cam_pos = glm::vec3(glm::rotate(glm::mat4(1.0f), -angle * 0.01f, axis) * glm::vec4(cam_pos, 1.0f));
+		//cam_up = glm::vec3(glm::rotate(glm::mat4(1.0f), -angle * 0.01f, axis) * glm::vec4(cam_up, 1.0f));
+		//V = glm::lookAt(cam_pos, cam_look_at, cam_up);
 
-		prev_pos = glm::vec2(xpos, ypos);
+		prev_pos2 = glm::vec2(xpos, ypos);
 	}
-	*/
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	float scalefactor = (yoffset > 0) ? 1.1f : 1 / 1.1f;
 	//cam_pos = glm::vec3(glm::scale(glm::mat4(1.0f), glm::vec3(scalefactor)) * glm::vec4(cam_pos, 1.0f));
-	radius *= scalefactor;
-	cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
-	V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+	if (isRight) 
+	{
+		glm::vec4 p = glm::vec4(cp->getPos(), 1.0f);
+		cp->setPos(scalefactor * p);
+		cloth->updateWind(cp->getPos());
+	}
+	else
+	{
+		radius *= scalefactor;
+		cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
+		V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+	}
 }

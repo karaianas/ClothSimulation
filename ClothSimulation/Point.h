@@ -5,7 +5,7 @@ using namespace std;
 
 class Point {
 public:
-	Point();
+	Point(glm::vec3 windPos);
 
 	void setPos(glm::vec3 curr);
 	void update(glm::vec3 delta);

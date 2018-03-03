@@ -25,6 +25,7 @@ public:
 	void drawInit();
 
 	void translate(glm::mat4 T);
+	void updateWind(glm::vec3 windPos);
 
 // Switch to private variables after debugging
 public:
@@ -35,12 +36,13 @@ public:
 	vector<Triangle>* triangles;
 
 private:
-	GLuint VAO, VBO, VBO2;
+	GLuint VAO, VBO, VBO2, VAO2, VBO3;
 	GLuint uMVP, uModel, uColor;
 
 	vector<glm::vec3> spositions;
 	vector<glm::vec3> tpositions;
 	vector<glm::vec3> tnormals;
+	vector<glm::vec3> shadows;
 
 	// attach: attaching points of cloth / attach2: of ropes
 	vector<int> attach;

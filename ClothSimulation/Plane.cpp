@@ -63,6 +63,7 @@ void Plane::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 	glUniform3f(uColor, 0.2f, 0.2f, 0.2f);
 
 	glBindVertexArray(VAO);
+	glLineWidth(1.0f);
 	glDrawArrays(GL_TRIANGLES, 0, positions.size());
 	glBindVertexArray(0);
 }

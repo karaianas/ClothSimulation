@@ -604,7 +604,7 @@ void ParticleSystem::update(float dt)
 
 	// (3) Compute aerodynamic force
 	for (auto t : *triangles)
-		t.computeForce(glm::vec3(0.0f, 0.0f, 5.0f));//5
+		t.computeForce(-wind * 5.0f);//5
 
 	// (4) Integrate
 	for (int i = 0; i < particles->size(); i++)
@@ -616,24 +616,18 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 {
 	glUseProgram(program);
 
-	//spositions.clear();
-	//for (auto p : *particles)
-	//{
-	//	spositions.push_back(p.getPos());
-	//}
-	//for (auto spring : *springs)
-	//{
-	//	spositions.push_back(spring.P1->getPos()); 
-	//	spositions.push_back(spring.P2->getPos());
-	//}
-
 	tpositions.clear();
 	tnormals.clear();
+	//shadows.clear();
 	for (auto t : *triangles)
 	{
-		tpositions.push_back(t.P1->getPos());
-		tpositions.push_back(t.P2->getPos());
-		tpositions.push_back(t.P3->getPos());
+		glm::vec3 p1 = t.P1->getPos();
+		glm::vec3 p2 = t.P2->getPos();
+		glm::vec3 p3 = t.P3->getPos();
+
+		tpositions.push_back(p1);
+		tpositions.push_back(p2);
+		tpositions.push_back(p3);
 
 		t.computeNormal();
 		t.P1->addNormal(t.N);
@@ -643,6 +637,12 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		//tnormals.push_back(t.N);
 		//tnormals.push_back(t.N);
 		//tnormals.push_back(t.N);
+
+		// Create pseudo shadows
+		//p1.y = 0.0f; p2.y = 0.0f; p3.y = 0.0f;
+		//shadows.push_back(p1);
+		//shadows.push_back(p2);
+		//shadows.push_back(p3);
 	}
 
 	// Smooth normal
@@ -675,19 +675,28 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	//glDrawArrays(GL_POINTS, 0, spositions.size());
 	//glDrawArrays(GL_POINTS, 0, tpositions.size());
+	glLineWidth(1.0f);
 	glDrawArrays(GL_TRIANGLES, 0, tpositions.size());
 	glBindVertexArray(0);
+
+	//glBindVertexArray(VAO2);
+	//glDrawArrays(GL_TRIANGLES, 0, shadows.size());
+	//glBindVertexArray(0);
 }
 
 void ParticleSystem::drawInit()
 {
 	glDeleteVertexArrays(1, &VAO);
+	//glDeleteVertexArrays(1, &VAO2);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &VBO2);
+	//glDeleteBuffers(1, &VBO3);
 
 	glGenVertexArrays(1, &VAO);
+	//glGenVertexArrays(1, &VAO2);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &VBO2);
+	//glGenBuffers(1, &VBO3);
 
 	glBindVertexArray(VAO);
 
@@ -706,6 +715,17 @@ void ParticleSystem::drawInit()
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	//glBindVertexArray(VAO2);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO3);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * shadows.size(), shadows.data(), GL_STATIC_DRAW);
+
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
 }
 
 void ParticleSystem::translate(glm::mat4 T)
@@ -714,5 +734,10 @@ void ParticleSystem::translate(glm::mat4 T)
 	{
 		particles->at(i).setPos(glm::vec3(T * glm::vec4(particles->at(i).getPos(), 1.0f)));
 	}
+}
+
+void ParticleSystem::updateWind(glm::vec3 windPos)
+{
+	wind = windPos;
 }
 
