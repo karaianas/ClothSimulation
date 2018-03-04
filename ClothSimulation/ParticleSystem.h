@@ -41,7 +41,6 @@ private:
 	GLuint VAO, VBO, VBO2, VAO2, VBO3;
 	GLuint uMVP, uModel, uColor;
 
-	vector<glm::vec3> spositions;
 	vector<glm::vec3> tpositions;
 	vector<glm::vec3> tnormals;
 	vector<glm::vec3> shadows;

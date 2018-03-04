@@ -73,7 +73,7 @@ void Window::initialize_objects()
 	cloth->setParams(mass, length, springConstants, c_d, rho, step, step);
 	cloth->createMesh(size, size, glm::vec3(-float(size * length) / 2.0f, 0.5f, 0.0f));
 
-	ground = new Plane(-0.001f);
+	ground = new Plane(-0.002f);
 
 	// Cursor control
 	glm::vec3 windPos = glm::vec3(0.0f, 0.0f, 1.0f);

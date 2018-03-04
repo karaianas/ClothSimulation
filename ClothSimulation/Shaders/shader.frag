@@ -22,8 +22,10 @@ void directional()
 {
 	vec3 norm = normalize(N);
 
-	vec3 L1 = normalize(vec3(1.0f, 1.0f, 1.0f));
-	vec3 lightColor1 = vec3(0.0f, 0.0f, 1.0f);
+	//vec3 L1 = normalize(vec3(1.0f, 1.0f, 1.0f));
+	vec3 L1 = normalize(vec3(-1.0f, 1.0f, 1.0f));
+	//vec3 lightColor1 = vec3(0.0f, 0.0f, 1.0f);
+	vec3 lightColor1 = vec3(1.0f, 1.0f, 1.0f);
 
 	vec3 L2 = normalize(vec3(-1.0f, 1.0f, 1.0f));
 	vec3 lightColor2 = vec3(0.0f, 1.0f, 0.0f);
@@ -45,7 +47,7 @@ void directional()
 
 	vec3 total = vec3(0.0f, 0.0f, 0.0f);
 	total += diff1;
-	total += diff2;
+	//total += diff2;
 
 	vec3 result = (total + ambi1) * C;
 	color = vec4(result, 1.0f);

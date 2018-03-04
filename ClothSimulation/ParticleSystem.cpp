@@ -640,7 +640,7 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		//tnormals.push_back(t.N);
 
 		// Create pseudo shadows
-		p1.y = 0.0f; p2.y = 0.0f; p3.y = 0.0f;
+		p1.y = -0.001f; p2.y = -0.001f; p3.y = -0.001f;
 		shadows.push_back(p1);
 		shadows.push_back(p2);
 		shadows.push_back(p3);
@@ -675,8 +675,6 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	glBindVertexArray(VAO);
 	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	//glDrawArrays(GL_POINTS, 0, spositions.size());
-	//glDrawArrays(GL_POINTS, 0, tpositions.size());
 	glLineWidth(1.0f);
 	glDrawArrays(GL_TRIANGLES, 0, tpositions.size());
 	glBindVertexArray(0);
