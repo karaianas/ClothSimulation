@@ -621,7 +621,6 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	for (int i = 0; i < triangles->size(); i++)
 	{
-		Triangle &t = triangles->at(i);
 		glm::vec3 p1 = triangles->at(i).P1->getPos();
 		glm::vec3 p2 = triangles->at(i).P2->getPos();
 		glm::vec3 p3 = triangles->at(i).P3->getPos();
@@ -635,10 +634,6 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		triangles->at(i).P2->addNormal(triangles->at(i).N);
 		triangles->at(i).P3->addNormal(triangles->at(i).N);
 
-		//tnormals.push_back(t.N);
-		//tnormals.push_back(t.N);
-		//tnormals.push_back(t.N);
-
 		// Create pseudo shadows
 		p1.y = -0.001f; p2.y = -0.001f; p3.y = -0.001f;
 		shadows.push_back(p1);
@@ -646,13 +641,17 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 		shadows.push_back(p3);
 	}
 
+	for (int i = 0; i < particles->size(); i++)
+	{
+		particles->at(i).computeNormal();
+	}
+
 	// Smooth normal
 	for (int i = 0; i < triangles->size(); i++)
 	{
-		//Triangle & t = triangles->at(i);
-		triangles->at(i).P1->computeNormal();
-		triangles->at(i).P2->computeNormal();
-		triangles->at(i).P3->computeNormal();
+		//triangles->at(i).P1->computeNormal();
+		//triangles->at(i).P2->computeNormal();
+		//triangles->at(i).P3->computeNormal();
 
 		tnormals.push_back(triangles->at(i).P1->getNorm());
 		tnormals.push_back(triangles->at(i).P2->getNorm());
