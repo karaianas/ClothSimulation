@@ -4,6 +4,7 @@ using namespace std;
 
 ParticleSystem::ParticleSystem()
 {
+	isZ = false;
 }
 
 void ParticleSystem::setParams(float m, float len, vector<float> springC, float drag, float den, int stepw, int steph)
@@ -45,15 +46,22 @@ void ParticleSystem::createMesh(int width, int height, glm::vec3 offset)
 				//x.setParams(mass * 10.0f, glm::vec3(float(j) * length, 0, float(i) * length) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 				attach.push_back(count);
 			}
-			x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0 ) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
-			x.id = count;
-
-			// Fix the top row initially
-			if (i == height - 1)
+			
+			if (!isZ)
 			{
+				x.setParams(mass, glm::vec3(float(j) * length, float(i) * length, 0) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
+
+				// Fix the top row initially
+				if (i == height - 1 )
+					x.isFixed = true;
+			}
+			else
+			{
+				x.setParams(mass, glm::vec3(float(j) * length, 0, float(i) * length) + offset, glm::vec3(0.0f), glm::vec3(0.0f));
 				x.isFixed = true;
 			}
-			//x.isFixed = true;
+			
+			x.id = count;
 			count++;
 			particles->push_back(x);
 		}
@@ -418,13 +426,13 @@ void ParticleSystem::createRope(glm::vec2 indices)
 	springs->push_back(saB);
 
 	// Triangles
-	Triangle abA(&(particles->at(a)), &(particles->at(b)), &(particles->at(A)));
-	abA.setParams(c_d, rho);
-	triangles->push_back(abA);
+	Triangle aBA(&(particles->at(a)), &(particles->at(B)), &(particles->at(A)));
+	aBA.setParams(c_d, rho);
+	triangles->push_back(aBA);
 
-	Triangle bBA(&(particles->at(b)), &(particles->at(B)), &(particles->at(A)));
-	bBA.setParams(c_d, rho);
-	triangles->push_back(bBA);
+	Triangle bBa(&(particles->at(b)), &(particles->at(B)), &(particles->at(a)));
+	bBa.setParams(c_d, rho);
+	triangles->push_back(bBa);
 }
 
 void ParticleSystem::attachBox()
@@ -485,7 +493,6 @@ void ParticleSystem::createBox()
 	vector<int> pid;
 	float scaleFactor = 0.1f;
 	float len1 = 2.0f * scaleFactor;
-	float len2 = 2.0f * sqrt(2.0f) * scaleFactor;
 
 	// Create particles
 	int count = particles->size();
@@ -504,8 +511,8 @@ void ParticleSystem::createBox()
 
 	// Create springs
 	int scounter = 0;
-	float ks = 100.0f;//300.0f
-	float kd = 0.1f;
+	float ks = 1000.0f;//300.0f
+	float kd = 0.001f;
 	for(int i = 0; i < pid.size(); i++)
 	{
 		for (int j = i + 1; j < pid.size(); j++)
@@ -543,18 +550,19 @@ void ParticleSystem::createBox()
 	Triangle t310(&(particles->at(pid[3])), &(particles->at(pid[1])), &(particles->at(pid[0])));
 	Triangle t321(&(particles->at(pid[3])), &(particles->at(pid[2])), &(particles->at(pid[1])));
 
-	t015.setParams(c_d, rho);
-	t054.setParams(c_d, rho);
-	t126.setParams(c_d, rho);
-	t165.setParams(c_d, rho);
-	t237.setParams(c_d, rho);
-	t276.setParams(c_d, rho);
-	t347.setParams(c_d, rho);
-	t304.setParams(c_d, rho);
-	t467.setParams(c_d, rho);
-	t456.setParams(c_d, rho);
-	t310.setParams(c_d, rho);
-	t321.setParams(c_d, rho);
+	float c_dt = 0.1f * c_d;
+	t015.setParams(c_dt, rho);
+	t054.setParams(c_dt, rho);
+	t126.setParams(c_dt, rho);
+	t165.setParams(c_dt, rho);
+	t237.setParams(c_dt, rho);
+	t276.setParams(c_dt, rho);
+	t347.setParams(c_dt, rho);
+	t304.setParams(c_dt, rho);
+	t467.setParams(c_dt, rho);
+	t456.setParams(c_dt, rho);
+	t310.setParams(c_dt, rho);
+	t321.setParams(c_dt, rho);
 
 	triangles->push_back(t015);
 	triangles->push_back(t054);
@@ -601,7 +609,6 @@ void ParticleSystem::update(float dt)
 	// (4) Integrate
 	for (int i = 0; i < particles->size(); i++)
 		particles->at(i).update(dt);
-
 }
 
 void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
@@ -614,19 +621,19 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 
 	for (int i = 0; i < triangles->size(); i++)
 	{
-		Triangle & t = triangles->at(i);
-		glm::vec3 p1 = t.P1->getPos();
-		glm::vec3 p2 = t.P2->getPos();
-		glm::vec3 p3 = t.P3->getPos();
+		Triangle &t = triangles->at(i);
+		glm::vec3 p1 = triangles->at(i).P1->getPos();
+		glm::vec3 p2 = triangles->at(i).P2->getPos();
+		glm::vec3 p3 = triangles->at(i).P3->getPos();
 
 		tpositions.push_back(p1);
 		tpositions.push_back(p2);
 		tpositions.push_back(p3);
 
-		//t.computeNormal();
-		t.P1->addNormal(t.N);
-		t.P2->addNormal(t.N);
-		t.P3->addNormal(t.N);
+		triangles->at(i).computeNormal();
+		triangles->at(i).P1->addNormal(triangles->at(i).N);
+		triangles->at(i).P2->addNormal(triangles->at(i).N);
+		triangles->at(i).P3->addNormal(triangles->at(i).N);
 
 		//tnormals.push_back(t.N);
 		//tnormals.push_back(t.N);
@@ -642,14 +649,14 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 	// Smooth normal
 	for (int i = 0; i < triangles->size(); i++)
 	{
-		Triangle & t = triangles->at(i);
-		t.P1->computeNormal();
-		t.P2->computeNormal();
-		t.P3->computeNormal();
+		//Triangle & t = triangles->at(i);
+		triangles->at(i).P1->computeNormal();
+		triangles->at(i).P2->computeNormal();
+		triangles->at(i).P3->computeNormal();
 
-		tnormals.push_back(t.P1->getNorm());
-		tnormals.push_back(t.P2->getNorm());
-		tnormals.push_back(t.P3->getNorm());
+		tnormals.push_back(triangles->at(i).P1->getNorm());
+		tnormals.push_back(triangles->at(i).P2->getNorm());
+		tnormals.push_back(triangles->at(i).P3->getNorm());
 	}
 	
 	drawInit();
@@ -675,7 +682,7 @@ void ParticleSystem::draw(GLuint program, glm::mat4 P, glm::mat4 V)
 	glBindVertexArray(0);
 
 	glBindVertexArray(VAO2);
-	glUniform3f(uColor, 0.4f, 0.4f, 0.4f);
+	glUniform3f(uColor, 0.4f * 0.3f, 0.7f * 0.3f, 1.0f * 0.3f);
 	glLineWidth(1.0f);
 	glDrawArrays(GL_TRIANGLES, 0, shadows.size());
 	glBindVertexArray(0);

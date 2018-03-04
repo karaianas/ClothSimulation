@@ -35,6 +35,8 @@ public:
 	vector<SpringDamper>* springs2;
 	vector<Triangle>* triangles;
 
+	bool isZ;
+
 private:
 	GLuint VAO, VBO, VBO2, VAO2, VBO3;
 	GLuint uMVP, uModel, uColor;

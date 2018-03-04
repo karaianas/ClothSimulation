@@ -27,6 +27,8 @@ void directional()
 
 	vec3 L2 = normalize(vec3(-1.0f, 1.0f, 1.0f));
 	vec3 lightColor2 = vec3(0.0f, 1.0f, 0.0f);
+	//vec3 lightColor2 = vec3(1.0f, 1.0f, 1.0f);
+	//vec3 lightColor2 = vec3(0.8f, 0.8f, 0.8f);
 
 	// diffuse
 	float k_d = 0.6f;
@@ -44,12 +46,6 @@ void directional()
 	vec3 total = vec3(0.0f, 0.0f, 0.0f);
 	total += diff1;
 	total += diff2;
-	/*
-	if(lights[0] - 0.5f > 0.0f)
-		total += diff1;
-	if(lights[1] - 0.5f > 0.0f)
-		total += diff2;
-		*/
 
 	vec3 result = (total + ambi1) * C;
 	color = vec4(result, 1.0f);

@@ -50,14 +50,15 @@ void Window::initialize_objects()
 	// Parachute demo
 	float mass = 0.0001;
 	float length = 0.03f;//0.01f
-	float c_d = 1.0f;//1.0f
+	float c_d = 10.0f;//1.0f
 	float rho = 1.23f;
 	int step = 10;
 	int size = 51;
 	parachute = new ParticleSystem();
 	parachute->setParams(mass, length, springConstants, c_d, rho, step, step);
 	//parachute->createMesh(51, 51 * 2, glm::vec3(-float(size * length) / 2.0f, 1.0f, 0.0f));
-	parachute->createMesh(size, size, glm::vec3(-float(size * length) / 2.0f, 5.0f, 0.0f));
+	parachute->isZ = true;
+	parachute->createMesh(size, size, glm::vec3(-float(size * length) / 2.0f, 7.0f, 0.0f));
 	parachute->attachRope();
 	parachute->attachBox();
 
@@ -66,11 +67,11 @@ void Window::initialize_objects()
 	length = 0.01f;//0.01f
 	c_d = 1.0f;//1.0f
 	rho = 1.23f;
-	step = 5;
+	step = 4;
 	size = 51;
 	cloth = new ParticleSystem();
 	cloth->setParams(mass, length, springConstants, c_d, rho, step, step);
-	cloth->createMesh(size, size * 2, glm::vec3(-float(size * length) / 2.0f, 0.5f, 0.0f));
+	cloth->createMesh(size, size, glm::vec3(-float(size * length) / 2.0f, 0.5f, 0.0f));
 
 	ground = new Plane(-0.001f);
 
@@ -78,6 +79,7 @@ void Window::initialize_objects()
 	glm::vec3 windPos = glm::vec3(0.0f, 0.0f, 1.0f);
 	cp = new Point(windPos);
 	cloth->updateWind(windPos);
+	parachute->updateWind(windPos);
 }
 
 void Window::clean_up()
@@ -243,13 +245,19 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				wireframe = true;
 		}
 
-		// Drop
+		// Drop cloth
 		if (key == GLFW_KEY_2)
 		{
-			isDrop = true;
-			parachute->drop();
+			//isDrop = true;
 			cloth->drop();
 			//ropes->drop();
+		}
+
+		// Drop cloth
+		if (key == GLFW_KEY_3)
+		{
+			//isDrop = true;
+			parachute->drop();
 		}
 
 	}
@@ -339,6 +347,7 @@ void Window::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 		//cp->setPos(glm::vec3(glm::inverse(PV) * R * P * V * p));
 		cp->setPos(R * p);
 		cloth->updateWind(cp->getPos());
+		parachute->updateWind(cp->getPos());
 
 		// Model rotation
 		//M->rotate(R);
@@ -361,6 +370,7 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 		glm::vec4 p = glm::vec4(cp->getPos(), 1.0f);
 		cp->setPos(scalefactor * p);
 		cloth->updateWind(cp->getPos());
+		parachute->updateWind(cp->getPos());
 	}
 	else
 	{
