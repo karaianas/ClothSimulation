@@ -27,3 +27,6 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+
+// Parallel
+#include <omp.h>

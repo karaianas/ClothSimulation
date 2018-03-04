@@ -40,11 +40,11 @@ void Window::initialize_objects()
 	vector<float> springConstants;
 	springConstants.push_back(4.0f);
 	springConstants.push_back(0.001f);
-	springConstants.push_back(4.2f);
+	springConstants.push_back(5.6f);//4.2f
 	springConstants.push_back(0.001f);
 	springConstants.push_back(1.0f);// 1.0f
 	springConstants.push_back(0.001f);
-	springConstants.push_back(1.2f);// 1.0f
+	springConstants.push_back(1.414f);// 1.0f
 	springConstants.push_back(0.001f);
 
 	// Parachute demo
@@ -80,6 +80,7 @@ void Window::initialize_objects()
 	cp = new Point(windPos);
 	cloth->updateWind(windPos);
 	parachute->updateWind(windPos);
+	
 }
 
 void Window::clean_up()
