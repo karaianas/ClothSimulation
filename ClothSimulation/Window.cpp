@@ -9,6 +9,7 @@ int Window::height;
 GLint shaderProgram;
 
 float theta = 0.0f;
+float dtheta = 3.14159f / 60;
 float radius = 5.0f;
 float cylheight = 1.0f;
 
@@ -196,7 +197,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 		if (key == GLFW_KEY_A)
 		{
-			theta -= 0.1f;
+			theta -= dtheta;
 			cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
 			cam_look_at[1] = cylheight;
 			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
@@ -204,7 +205,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 		if (key == GLFW_KEY_D)
 		{
-			theta += 0.1f;
+			theta += dtheta;
 			cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
 			cam_look_at[1] = cylheight;
 			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
@@ -213,7 +214,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_W)
 		{
 			cylheight += 0.2f;
-			//cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
 			cam_pos[1] = cylheight;
 			cam_look_at[1] = cylheight;
 			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
@@ -222,7 +222,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_S)
 		{
 			cylheight -= 0.2f;
-			//cam_pos = glm::vec3(radius * sin(theta), cylheight, radius * cos(theta));
 			cam_pos[1] = cylheight;
 			cam_look_at[1] = cylheight;
 			V = glm::lookAt(cam_pos, cam_look_at, cam_up);
@@ -249,7 +248,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		// Drop cloth
 		if (key == GLFW_KEY_2)
 		{
-			//isDrop = true;
 			cloth->drop();
 			//ropes->drop();
 		}
@@ -257,7 +255,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		// Drop cloth
 		if (key == GLFW_KEY_3)
 		{
-			//isDrop = true;
 			parachute->drop();
 		}
 
@@ -345,7 +342,6 @@ void Window::cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 		// Point rotation
 		glm::mat4 PV = P * V;
 		glm::vec4 p = glm::vec4(cp->getPos(), 1.0f);
-		//cp->setPos(glm::vec3(glm::inverse(PV) * R * P * V * p));
 		cp->setPos(R * p);
 		cloth->updateWind(cp->getPos());
 		parachute->updateWind(cp->getPos());
