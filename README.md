@@ -1,5 +1,5 @@
 # ClothSimulation
-[Complete] Physically based simulation of a cloth using spring-dampers.
+Physically based simulation of a cloth using spring-dampers. The cloth is a system of particles which responds to gravitational force, elasticity, and wind.
 
 Cloth Simulation:
 https://youtu.be/wL_dotlTfXc
